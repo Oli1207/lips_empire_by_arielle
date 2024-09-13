@@ -1,0 +1,39 @@
+.product-specification {
+    margin: 20px 0;
+    padding: 20px;
+ /* Un rose pâle pour rester cohérent avec votre schéma de couleurs */
+    
+
+}
+
+.product-specification h3 {
+    font-size: 1.5rem;
+    color: #ff69b4; /* Un rose vif pour faire ressortir le titre */
+    margin-bottom: 15px;
+}
+
+.product-specification ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.product-specification ul li {
+    margin-bottom: 10px;
+    font-size: 1rem;
+    color: #333;
+}
+
+/* Flexbox to align specification section on the left */
+.row.gx-lg-5 {
+    display: flex;
+    flex-direction: row;
+}
+
+.product-specification {
+    order: 2;
+    flex: 1;
+}
+
+.col-md-6.mb-4.mb-md-0 {
+    flex: 2;
+}

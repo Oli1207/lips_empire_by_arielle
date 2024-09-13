@@ -1,0 +1,132 @@
+/* Palette de couleurs */
+:root {
+    --primary-color: #FF77A9; /* Rose principal */
+    --secondary-color: #FF9B9B; /* Rose clair */
+    --accent-color: #FFE6E9; /* Rose pâle */
+    --background-color: #FDEFF3; /* Fond rose très clair */
+    --text-color: #333333; /* Texte sombre */
+    --heading-font: 'Playfair Display', serif; /* Police pour les titres */
+    --body-font: 'Roboto', sans-serif; /* Police pour le corps du texte */
+  }
+  
+  /* Corps global */
+  body {
+    font-family: var(--body-font);
+    background-color: white;
+    color: var(--text-color);
+  }
+  
+  /* En-têtes */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--heading-font);
+    color: var(--primary-color);
+  }
+  
+  /* Liens */
+  a {
+    color: var(--primary-color);
+    text-decoration: none;
+  }
+  a:hover {
+    color: var(--secondary-color);
+    text-decoration: underline;
+  }
+  
+  /* Boutons */
+  .btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: #fff;
+  }
+  .btn-primary:hover {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+  }
+  
+  /* Cartes (produits) */
+  .card {
+    border: 1px solid var(--accent-color);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+  }
+  
+  /* Images dans les cartes */
+  .card img {
+    object-fit: cover;
+    height: 250px;
+    transition: transform 0.3s ease;
+  }
+  .card:hover img {
+    transform: scale(1.1);
+  }
+  
+  /* Navigation */
+  .navbar {
+    background-color: var(--background-color);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  .nav-link {
+    color: var(--text-color);
+    font-family: var(--heading-font);
+  }
+  .nav-link:hover {
+    color: var(--primary-color);
+  }
+  
+  /* Pied de page */
+  footer {
+    background-color: var(--primary-color);
+    color: #fff;
+    padding: 20px 0;
+    text-align: center;
+  }
+  footer a {
+    color: #fff;
+  }
+  footer a:hover {
+    color: var(--secondary-color);
+  }
+  
+  /* Modales */
+  .modal-content {
+    background-color: var(--background-color);
+    border-radius: 10px;
+  }
+  .modal-header, .modal-footer {
+    border: none;
+  }
+  .modal-header {
+    background-color: var(--primary-color);
+    color: #fff;
+  }
+  .modal-footer .btn {
+    background-color: var(--primary-color);
+    color: #fff;
+  }
+  .modal-footer .btn:hover {
+    background-color: var(--secondary-color);
+  }
+  
+  /* Barre de défilement personnalisée */
+  ::-webkit-scrollbar {
+    width: 12px;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--primary-color), var(--secondary-color));
+    border-radius: 10px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: var(--accent-color);
+    border-radius: 10px;
+  }
+  
+  body {
+    cursor: url('curseur.png'), auto; /* Assurez-vous que le chemin est correct et que le fichier est au format .cur ou .png */
+}
