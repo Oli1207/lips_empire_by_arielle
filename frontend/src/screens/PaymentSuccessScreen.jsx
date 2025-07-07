@@ -41,7 +41,7 @@ function PaymentSuccessScreen() {
     }, [param?.order_oid])
 
     return (
-        <main style={{marginTop:"200px"}}>
+        <main style={{marginTop:"50px"}}>
             <div className="container">
                 {/* Section: Checkout form */}
                 <section className="">
@@ -112,7 +112,8 @@ function PaymentSuccessScreen() {
                                                      <p>
                                                          Your checkout was successful.
                                                          <hr />
-                                                         <small>Gardez bien votre id de commande <b> {order.oid}</b> pour le suivi et d'éventuelles réclamations</small>
+                                                         <small>Gardez bien votre id de commande <b> {order.oid}</b> pour le suivi et d'éventuelles réclamations.
+                                                         Un lien de suivi vous a été envoyé par email pour suivre l’acheminement de votre colis.</small>
                                                      </p>
                                                      <button
                                                          className="btn btn-success mt-3"
@@ -121,14 +122,14 @@ function PaymentSuccessScreen() {
                                                      >
                                                          View Order <i className="fas fa-eye" />{" "}
                                                      </button>
-                                                     <a
+                                                     {/* <a
                                                          href="/"
                                                          className="btn btn-primary mt-3 ms-2"
                                                      >
                                                          Download Invoice{" "}
                                                          <i className="fas fa-file-invoice" />{" "}
-                                                     </a>
-                                                     <a
+                                                     </a> */}
+                                                     <a href="/"
                                                          className="btn btn-secondary mt-3 ms-2"
                                                      >
                                                          Go Home <i className="fas fa-arrow-left" />{" "}
@@ -161,14 +162,14 @@ function PaymentSuccessScreen() {
                                                      >
                                                          View Order <i className="fas fa-eye" />{" "}
                                                      </button>
-                                                     <a
+                                                     {/* <a
                                                          href="/"
                                                          className="btn btn-primary mt-3 ms-2"
                                                      >
                                                          Download Invoice{" "}
                                                          <i className="fas fa-file-invoice" />{" "}
-                                                     </a>
-                                                     <a
+                                                     </a> */}
+                                                     <a href="/"
                                                          className="btn btn-secondary mt-3 ms-2"
                                                      >
                                                          Go Home <i className="fas fa-arrow-left" />{" "}
@@ -206,12 +207,12 @@ function PaymentSuccessScreen() {
                             />
                         </div>
                         <div className="modal-body text-start text-black p-4">
-                            <h5 className="modal-title text-uppercase " id="exampleModalLabel">
+                            <h5 style={{color:'black'}} className="modal-title text-uppercase " id="exampleModalLabel">
                                 {order.full_name}
                             </h5>
-                            <h6>{order.email}</h6>
-                            <h6>{order.mobile}</h6>
-                            <h6 className="mb-5">{order.address} - {order.city} <br />  {order.state} - {order.country} </h6>
+                            <h6 style={{color:'black'}}>{order.email}</h6>
+                            <h6 style={{color:'black'}}>{order.mobile}</h6>
+                            <h6 style={{color:'black'}} className="mb-5">{order.address} - {order.city} <br />  {order.state} - {order.country} </h6>
                             <p className="mb-0" style={{ color: "#35558a" }}>
                                 Payment summary
                             </p>
@@ -226,32 +227,32 @@ function PaymentSuccessScreen() {
                             />
                             {order.orderitem?.map ((o, index) =>(
                                  <div className="d-flex justify-content-between shadow p-2 rounded-2 mb-2">
-                                 <p className="fw-bold mb-0">{o.product?.title}</p>
-                                 <p className="text-muted mb-0">${o.price} * {o.qty} </p>
+                                 <p style={{color:'black'}} className="fw-bold mb-0">{o.product?.title}</p>
+                                 <p style={{color:'black'}} className="text-muted mb-0">${o.price} * {o.qty} </p>
                              </div>
                             ))}
                             <div className="d-flex justify-content-between">
-                                <p className="fw-bold mb-0">Subtotal</p>
-                                <p className="text-muted mb-0">${order.sub_total}</p>
+                                <p style={{color:'black'}} className="fw-bold mb-0">Subtotal</p>
+                                <p style={{color:'black'}} className="text-muted mb-0">${order.sub_total}</p>
                             </div>
                             <div className="d-flex justify-content-between">
-                                <p className="small mb-0">Shipping Fee</p>
-                                <p className="small mb-0">${order.shipping_amount}</p>
+                                <p style={{color:'black'}} className="small mb-0">Shipping Fee</p>
+                                <p style={{color:'black'}} className="small mb-0">${order.shipping_amount}</p>
                             </div>
                             <div className="d-flex justify-content-between">
-                                <p className="small mb-0">Service Fee</p>
-                                <p className="small mb-0">${order.service_fee}</p>
+                                <p style={{color:'black'}} className="small mb-0">Service Fee</p>
+                                <p style={{color:'black'}} className="small mb-0">${order.service_fee}</p>
                             </div>
                             <div className="d-flex justify-content-between">
-                                <p className="small mb-0">Tax</p>
-                                <p className="small mb-0">${order.tax_fee}</p>
+                                <p style={{color:'black'}} className="small mb-0">Tax</p>
+                                <p style={{color:'black'}} className="small mb-0">${order.tax_fee}</p>
                             </div>
                             <div className="d-flex justify-content-between">
-                                <p className="small mb-0">Discount</p>
-                                <p className="small mb-0">-${order.saved}</p>
+                                <p style={{color:'black'}} className="small mb-0">Discount</p>
+                                <p style={{color:'black'}} className="small mb-0">-${order.saved}</p>
                             </div>
                             <div className="d-flex justify-content-between mt-4">
-                                <p className="fw-bold">Total</p>
+                                <p style={{color:'black'}} className="fw-bold">Total</p>
                                 <p className="fw-bold" style={{ color: "#35558a" }}>
                                     ${order.total}
                                 </p>

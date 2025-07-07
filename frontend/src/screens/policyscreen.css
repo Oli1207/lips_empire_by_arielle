@@ -1,0 +1,18 @@
+
+/* Import de Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap');
+
+/* Style personnalisé */
+.custom-title {
+    text-align: center; /* Centrer le texte */
+    font-weight: 600; /* Épaisseur pour imiter "Distillery Caps" */
+    color: #fedbd1; /* Couleur rose vif */
+    font-family: 'Cursive'; /* Police alternative gratuite */
+    font-size: 3rem; /* Taille de la police */
+    letter-spacing: 0.1rem; /* Espacement des lettres */
+ 
+}
+p{
+    font-family: 'cursive';
+    font-size: 20px;
+}

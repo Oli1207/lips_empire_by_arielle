@@ -1,140 +1,207 @@
-/* Styles pour le défilement horizontal sur les grands écrans */
+/* Général — cartes produits */
+.product-card {
+  flex: 0 0 auto;
+  max-width: 300px;
+  max-height: 600px;
+  margin-right: 15px;
+  transition: all 0.3s ease-in-out;
+}
+
+.product-card.expanded {
+  max-height: 1500px;
+  max-width: 800px;
+}
+
+/* Conteneur horizontal scroll desktop */
 .product-scroll-container {
-    display: flex;
-    overflow-x: auto;
-    overflow-y: hidden;
-    padding: 0;
-    scroll-snap-type: x mandatory;
-  }
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0;
+  margin-top: 25px;
+  scroll-snap-type: x mandatory;
   
+}
+
+/* Scrollbar custom */
+.product-scroll-container::-webkit-scrollbar {
+  height: 12px;
+}
+
+.product-scroll-container::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #FF77A9, #FF9B9B);
+  border-radius: 10px;
+}
+
+.product-scroll-container::-webkit-scrollbar-track {
+  background: #FDEFF3;
+  border-radius: 10px;
+}
+
+/* Images produits */
+.product-card .product-image {
+  width: 220px;
+  object-fit: cover;
+  height: 50vh;
+  transition: transform 0.3s ease-in-out, height 0.3s ease-in-out;
+}
+
+/* Layout mobile — vertical scroll */
+@media (max-width: 768px) {
+  .product-scroll-container {
+    display: block;
+    overflow-x: hidden;
+    overflow-y: auto;
+    width: 80%;
+    margin-left: auto;
+  margin-right: auto;
+  
+  }
+
   .product-card {
-    flex: 0 0 auto;
-    scroll-snap-align: start;
-    margin-right: 15px; /* Espacement entre les cartes */
-  }
-  
-  /* Styles pour le défilement vertical sur les petits écrans */
-  @media (max-width: 768px) {
-    .product-scroll-container {
-      display: block;
-      overflow-x: hidden;
-      overflow-y: auto;
-    }
-  
-    .product-card {
-      margin-right: 0;
-      margin-bottom: 15px; /* Espacement entre les cartes en mode vertical */
-    }
-  }
-  
-  /* Styles pour la barre de défilement */
-  .product-scroll-container::-webkit-scrollbar {
-    width: 12px; /* Largeur de la barre de défilement */
-  }
-  
-  /* Styles pour la partie "pouce" de la barre de défilement */
-  .product-scroll-container::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, #FF77A9, #FF9B9B); /* Dégradé de rose */
-    border-radius: 10px; /* Bords arrondis pour le pouce */
-  }
-  
-  /* Styles pour la partie de la barre de défilement qui reste visible (le rail) */
-  .product-scroll-container::-webkit-scrollbar-track {
-    background: #FDEFF3; /* Couleur de fond rose pâle */
-    border-radius: 10px; /* Bords arrondis pour le rail */
-  }
-  
-  /* Styles pour la barre de défilement verticale (sur les petits écrans) */
-  @media (max-width: 768px) {
-    .product-scroll-container::-webkit-scrollbar {
-      height: 12px; /* Hauteur de la barre de défilement pour le défilement vertical */
-    }
-  
-    .product-scroll-container::-webkit-scrollbar-thumb {
-      background: linear-gradient(90deg, #FF77A9, #FF9B9B); /* Dégradé horizontal pour les petits écrans */
-    }
-  
-    .product-scroll-container::-webkit-scrollbar-track {
-      background: #FDEFF3; /* Couleur de fond rose pâle pour le rail vertical */
-    }
-  }
-  
-  /* Styles pour l'image dans la carte */
-  .card img {
+    margin-right: 0;
+    margin-bottom: 15px;
     width: 100%;
-    height: 300px; /* Taille plus grande pour une meilleure visibilité */
-    object-fit: cover; /* Garde les proportions de l'image tout en remplissant l'espace */
-    transition: transform 0.5s ease; /* Transition fluide pour l'effet de défilement */
+    max-height: unset;
   }
-  
-  /* Effet de zoom au survol */
-  /*.card:hover img {
-    transform: scale(1.1);  Zoom sur l'image lorsqu'elle est survolée 
-  }*/
-  
-  /* Effet de défilement horizontal pour mobile */
-  @media (max-width: 768px) {
-    .product-scroll-container {
-      overflow-x: scroll;
-      display: flex;
-      flex-direction: row;
-      scroll-snap-type: x mandatory;
-    }
-  
-    .product-scroll-container .card {
-      flex: 0 0 auto;
-      scroll-snap-align: start;
-      margin-right: 10px;
-      width: 80%;
-    }
-  
-    .card img {
-      height: 200px; /* Taille réduite pour s'adapter aux petits écrans */
-    }
+
+  .product-card.expanded {
+    max-height: unset;
   }
-  
-/* Logo transition effect */
+
+  .product-card .product-image {
+    width: 100%;
+    height: 250px;
+  }
+}
+
+/* Desktop large — image à 70vh */
+@media (min-width: 992px) {
+  .product-card .product-image {
+    height: 60vh;
+    width: 300px;
+  }
+}
+
+/* Barre logo transition */
 .logo-transition {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #FFE6E9; /* Couleur de fond unie */
-    z-index: 2000; /* Assure que la transition est au-dessus du reste du contenu */
-    animation: none; /* Pas d'animation au début */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fedbd1;
+  z-index: 2000;
+  animation: none;
+}
+
+@keyframes fadeInOut {
+  0% {
+    opacity: 1;
   }
-  
-  /* Keyframes for the fade-in and fade-out effect */
-  @keyframes fadeInOut {
-    0% {
-      opacity: 1;
-    }
-    10% {
-      opacity: 1;
-    }
-    100% {
-      opacity: 0;
-    }
+  10% {
+    opacity: 1;
   }
-  
-  /* Apply the animation after a delay */
-  .logo-transition.fade-out {
-    animation: fadeInOut 1s ease-out forwards; /* Animation pour disparaître */
-  }
-  
-  /* Hide the rest of the page until the animation is complete */
-  .content {
-    visibility: hidden;
+  100% {
     opacity: 0;
   }
-  
-  .content.show {
-    visibility: visible;
-    opacity: 1;
-    transition: opacity 0.5s ease-in;
-  }
-  
+}
+
+.logo-transition.fade-out {
+  animation: fadeInOut 1s ease-out forwards;
+}
+
+.content {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.content.show {
+  visibility: visible;
+  opacity: 1;
+  transition: opacity 0.5s ease-in;
+}
+
+/* Boutons personnalisés */
+.custom-btn {
+  color: white;
+  background-color: black;
+  border: none;
+}
+
+.custom-btn:active {
+  background-color: #FFE6E9;
+  color: black;
+}
+
+.custom-btn:hover {
+  opacity: 0.9;
+}
+
+/* Toggle content sections */
+.toggle-container {
+  margin: 20px 0;
+  border-top: 1px solid black;
+  padding: 10px 0;
+}
+
+.toggle-btn {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  font-size: 16px;
+  font-weight: bold;
+  padding: 10px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+.toggle-btn b {
+  font-size: 16px;
+}
+
+.toggle-btn span {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.toggle-content {
+  padding: 10px 0;
+  font-size: 14px;
+  color: #555;
+  line-height: 1.5;
+  transition: all 0.3s ease-in-out;
+}
+
+.toggle-container:last-child {
+  border-bottom: none;
+}
+
+.toggle-content p {
+  margin: 0;
+}
+
+.toggle-content div {
+  margin: 5px 0;
+}
+
+/* SweetAlert boutons */
+.custom-confirm-button {
+  color: black !important;
+  background-color: #FFE6E9 !important;
+  border: none;
+}
+
+.custom-cancel-button {
+  color: black !important;
+  background-color: #FFE6E9 !important;
+  border: none;
+  margin-left: 5px;
+}

@@ -22,7 +22,7 @@ class CartOrderAdmin(admin.ModelAdmin):
     
 
 admin.site.register(Product, ProductAdmin)
-
+admin.site.register(Profile)
 admin.site.register(Cart)
 admin.site.register(CartOrder)
 admin.site.register(CartOrderItem)
@@ -31,3 +31,5 @@ admin.site.register(Wishlist)
 admin.site.register(Category)
 admin.site.register(Tax)
 admin.site.register(Contact)
+admin.site.register(Review)
+admin.site.register(User)

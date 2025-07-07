@@ -1,9 +1,10 @@
 /* Palette de couleurs */
 :root {
-    --primary-color: #FF77A9; /* Rose principal */
-    --secondary-color: #FF9B9B; /* Rose clair */
-    --accent-color: #FFE6E9; /* Rose pâle */
+   
+    --secondary-color:  #FFE6E9;; /* Rose clair */
+    --accent-color: #FF9B9B; /* Rose pâle */
     --background-color: #FDEFF3; /* Fond rose très clair */
+    --logo-color: #fedbd1;
     --text-color: #333333; /* Texte sombre */
     --heading-font: 'Playfair Display', serif; /* Police pour les titres */
     --body-font: 'Roboto', sans-serif; /* Police pour le corps du texte */
@@ -11,20 +12,20 @@
   
   /* Corps global */
   body {
-    font-family: var(--body-font);
+    font-family: var(--body-font);      
     background-color: white;
     color: var(--text-color);
-  }
+    }
   
   /* En-têtes */
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--heading-font);
-    color: var(--primary-color);
+    color: var(--secondary-color);
   }
   
   /* Liens */
   a {
-    color: var(--primary-color);
+    color: var(--secondary-color);
     text-decoration: none;
   }
   a:hover {
@@ -34,8 +35,8 @@
   
   /* Boutons */
   .btn-primary {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
     color: #fff;
   }
   .btn-primary:hover {
@@ -67,7 +68,7 @@
   
   /* Navigation */
   .navbar {
-    background-color: var(--background-color);
+    background-color: #fedbd1;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   }
   .nav-link {
@@ -75,12 +76,12 @@
     font-family: var(--heading-font);
   }
   .nav-link:hover {
-    color: var(--primary-color);
+    color: var(--secondary-color);
   }
   
   /* Pied de page */
   footer {
-    background-color: var(--primary-color);
+    background-color: var(--secondary-color);
     color: #fff;
     padding: 20px 0;
     text-align: center;
@@ -101,11 +102,11 @@
     border: none;
   }
   .modal-header {
-    background-color: var(--primary-color);
+    background-color: var(--secondary-color);
     color: #fff;
   }
   .modal-footer .btn {
-    background-color: var(--primary-color);
+    background-color: var(--secondary-color);
     color: #fff;
   }
   .modal-footer .btn:hover {
@@ -118,15 +119,18 @@
   }
   
   ::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, var(--primary-color), var(--secondary-color));
+    background: linear-gradient(180deg, var(--secondary-color), var(--secondary-color));
     border-radius: 10px;
   }
   
   ::-webkit-scrollbar-track {
-    background: var(--accent-color);
+    background: white;
     border-radius: 10px;
   }
   
-  body {
-    cursor: url('curseur.png'), auto; /* Assurez-vous que le chemin est correct et que le fichier est au format .cur ou .png */
+/*   
+  body 
+    cursor: url('curseur.png'), auto; /* Assurez-vous que le chemin est correct et que le fichier est au format .cur ou .png 
 }
+
+*/

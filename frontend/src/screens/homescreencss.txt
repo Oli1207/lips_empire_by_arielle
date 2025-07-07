@@ -1,0 +1,247 @@
+
+
+@media (max-width: 425px) {
+  .product-card {
+    flex: 0 0 auto;
+    max-width: 300px;
+    max-height: 600px;
+    margin-left: 10%; /* Espacement entre les cartes */
+    margin-right: 10%;
+    transition: all 0.3s ease-in-out; /* Transition fluide lors des modifications */
+  }
+  .product-scroll-container {
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0;
+    margin-top: 25px;
+    scroll-snap-type: x mandatory;
+  }
+}
+/* Général */
+.product-card {
+  flex: 0 0 auto;
+  max-width: 300px;
+  max-height: 600px;
+  margin-right: 15px; /* Espacement entre les cartes */
+  transition: all 0.3s ease-in-out; /* Transition fluide lors des modifications */
+}
+
+.product-card.expanded {
+  max-height: 1500px; /* Augmente la hauteur lorsque la carte est étendue */
+  max-width: 800px;
+}
+
+/* Conteneur principal pour le défilement horizontal */
+.product-scroll-container {
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0;
+  scroll-snap-type: x mandatory;
+}
+
+/* Disposition verticale pour les petits écrans */
+
+@media (max-width: 768px) {
+  .product-scroll-container {
+    display: block;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+
+  .product-card {
+    margin-right: 0;
+    margin-bottom: 15px; /* Espacement entre les cartes en mode vertical */
+    width: 100%; /* S'adapte à toute la largeur du conteneur */
+    max-height: unset; /* La hauteur est déterminée par le contenu */
+  }
+
+  .product-card.expanded {
+    max-height: unset; /* Laisse la carte grandir selon le contenu */
+  }
+}
+
+/* Transition fluide pour les images */
+.card img {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+  transition: transform 0.3s ease-in-out;
+}
+
+/* Barre de défilement */
+.product-scroll-container::-webkit-scrollbar {
+  height: 12px;
+}
+
+.product-scroll-container::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #FF77A9, #FF9B9B);
+  border-radius: 10px;
+}
+
+.product-scroll-container::-webkit-scrollbar-track {
+  background: #FDEFF3;
+  border-radius: 10px;
+}
+
+/* Logo transition effect */
+.logo-transition {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fedbd1; /* Couleur de fond unie */
+    z-index: 2000; /* Assure que la transition est au-dessus du reste du contenu */
+    animation: none; /* Pas d'animation au début */
+  }
+  
+  /* Keyframes for the fade-in and fade-out effect */
+  @keyframes fadeInOut {
+    0% {
+      opacity: 1;
+    }
+    10% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+  
+  /* Apply the animation after a delay */
+  .logo-transition.fade-out {
+    animation: fadeInOut 1s ease-out forwards; /* Animation pour disparaître */
+  }
+  
+  /* Hide the rest of the page until the animation is complete */
+  .content {
+    visibility: hidden;
+    opacity: 0;
+  }
+  
+  .content.show {
+    visibility: visible;
+    opacity: 1;
+    transition: opacity 0.5s ease-in;
+  }
+  
+  .custom-btn {
+    color: white;
+    background-color: black;
+    border: none; /* Enlève la bordure */
+  }
+  
+  .custom-btn:active {
+    background-color: #FFE6E9;
+    color: black; /* Facultatif si vous souhaitez changer la couleur du texte */
+  }
+  
+  .custom-btn:hover {
+    opacity: 0.9; /* Effet de survol doux */
+  }
+  .toggle-container {
+    margin: 20px 0;
+    
+    border-top: 1px solid black; /* Ligne de séparation */
+    padding: 10px 0;
+  }
+  
+  .toggle-btn {
+    width: 100%; /* Bouton occupant toute la largeur */
+    text-align: left; /* Alignement du texte à gauche */
+    background: none;
+    border: none;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 10px 0;
+    display: flex;
+    justify-content: space-between; /* Texte à gauche, symbole à droite */
+    align-items: center;
+    cursor: pointer;
+  }
+  
+  .toggle-btn b {
+    font-size: 16px; /* Taille du texte */
+  }
+  
+  .toggle-btn span {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+  }
+  
+  .toggle-content {
+    padding: 10px 0;
+    font-size: 14px;
+    color: #555; /* Texte gris pour le contenu */
+    line-height: 1.5;
+    
+  }
+  .toggle-container:last-child {
+    border-bottom: none; /* Pas de ligne après la dernière section */
+  }
+  .toggle-content p {
+    margin: 0;
+  }
+  
+  .toggle-content div {
+    margin: 5px 0;
+  }
+  
+  /* Ajouter une transition fluide */
+  .toggle-content {
+    transition: all 0.3s ease-in-out;
+  }
+  .custom-confirm-button {
+    color: black !important; /* Texte noir */
+    background-color:  #FFE6E9 !important; /* Couleur de fond par défaut (bleu) */
+    border: none; /* Pas de bordure */
+  }
+  
+  .custom-cancel-button {
+    color: black !important; /* Texte noir */
+    background-color:  #FFE6E9 !important; /* Couleur de fond par défaut (gris) */
+    border: none; /* Pas de bordure */
+    margin-left: 5px;
+  }
+
+  /* @media (max-width: 425px) {
+    .product-card {
+      flex: 0 0 auto;
+      width: 450px;
+      max-height: 600px;
+      margin-right: 15px;  Espacement entre les cartes 
+      transition all 0.3s ease-in-out;  Transition fluide lors des modifications 
+    }
+  } 
+  */
+
+@media (min-width: 768px) {
+    .product-card {
+      flex: 0 0 auto;
+      
+      
+      margin-right: 15px; /* Espacement entre les cartes */
+      transition: all 0.3s ease-in-out; /* Transition fluide lors des modifications */
+    }
+    .product-scroll-container {
+      display: flex;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding: 0;
+      margin-top: 25px;
+      height: 100vh;
+      scroll-snap-type: x mandatory;
+    }
+    .product-image {
+      width: 220px;
+      object-fit: cover;
+      height: 20vh; /* hauteur par défaut sur petit écran */
+    }
+  }

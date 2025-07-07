@@ -1,0 +1,7 @@
+@media (max-width: 425px) {
+    .product-image{
+    height: 50px; 
+    object-fit: cover;
+     border-radius: 10px 
+    }
+}

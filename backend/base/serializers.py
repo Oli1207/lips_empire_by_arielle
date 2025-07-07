@@ -14,6 +14,7 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['full_name'] = user.full_name
         token['email'] = user.email
         token['username'] = user.username
+        token['phone'] = user.phone
         return token
     
 
@@ -218,3 +219,20 @@ class ContactSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contact
         fields = ['name', 'email', 'subject', 'message']
+        
+
+class ReviewSerializer(serializers.ModelSerializer):
+    profile = ProfileSerializer()
+    class Meta:
+        model = Review
+        fields = ['id', 'review', 'rating', 'user', 'profile', 'date']
+
+    def __init__(self, *args, **kwargs):
+        super(ReviewSerializer, self).__init__(*args, **kwargs)
+
+        request = self.context.get("request")
+        if request and request.method == "POST":
+            self.Meta.depth = 0
+
+        else:
+            self.Meta.depth = 3

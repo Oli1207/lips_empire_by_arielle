@@ -1,30 +1,202 @@
-/* Styling for the navigation items as buttons */
-.navbar .nav-link {
-  display: flex;
-  align-items: center;
-  margin: 0 15px; /* Espacement augmenté */
-  padding: 12px 25px; /* Espacement augmenté */
-  border: none;
-  background: transparent;
-  color: burlywood; /* Couleur du texte plus sombre pour le contraste */
-  font-size: 18px; /* Taille du texte augmentée */
-  font-weight: 600; /* Poids du texte augmenté */
-  text-decoration: none;
-  transition: background-color 0.3s, color 0.3s, transform 0.3s;
-  border-radius: 8px; /* Coins arrondis pour les boutons */
-  text-shadow: 2px 2px brown;
+@media (max-width: 425px) {
+  .navbar {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.7); /* Légère transparence */
+    z-index: 1000;
+    height: auto;
+    padding: 10px;
+  }
+
+  .navbar .logo {
+    width: 120px;
+    height: auto;
+  }
+
+  /* Toggle Button */
+  .custom-toggle {
+    background: transparent;
+    border: none;
+    font-size: 24px;
+    color: burlywood;
+    margin-left: 10px;
+  }
+
+  .custom-toggle:focus {
+    outline: none;
+    box-shadow: none;
+  }
+
+  /* Nav Collapse */
+  .navbar-collapse {
+    display: none !important;
+  }
+
+  .navbar .nav-link {
+    display: flex;
+    justify-content: center;
+    color: white;
+    font-size: 16px;
+    padding: 10px 0;
+  }
+
+  .navbar .nav-link:hover {
+    background: burlywood;
+    color: black;
+    border-radius: 5px;
+  }
+
+  .offcanvas {
+    background-color: #f2d8db !important; /* Change la couleur de fond */
+    color: black !important; /* Change la couleur du texte */
+  }
+  
+  .offcanvas-header {
+    background-color: #e0bfc0 !important; /* Couleur de l'en-tête du Offcanvas */
+  }
+  
+  .offcanvas-body {
+    background-color: #fedbd1 !important; /* Couleur du corps du Offcanvas */
+  }
+  
+  .offcanvas .nav-link {
+    color: black !important; /* Change la couleur du texte des liens */
+  }
+  
+  .offcanvas .nav-link:hover {
+    background: burlywood !important;
+    color: white !important;
+    border-radius: 5px;
+  }
+  
 }
 
-/* Styling for hover state */
-.navbar .nav-link:hover,
-.navbar .nav-link:focus {
-  background: linear-gradient(180deg, #F2D8DB 0%, #F2D8DB 66%); /* Dégradé au survol */
-  color: #3C3C3C; /* Couleur du texte au survol, contrastée avec le fond */
-  transform: scale(1.05); /* Agrandissement léger du bouton */
+@media (min-width: 425px) and (max-width: 769px) {
+  /* Styling for the navigation items as buttons */
+  .navbar {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.7); /* Légère transparence */
+    z-index: 1000;
+    height: auto;
+    padding: 10px;
+  }
+
+  .navbar .logo {
+    width: 120px;
+    height: auto;
+  }
+
+  /* Toggle Button */
+  .custom-toggle {
+    background: transparent;
+    border: none;
+    font-size: 24px;
+    color: burlywood;
+    margin-left: 10px;
+  }
+
+  .custom-toggle:focus {
+    outline: none;
+    box-shadow: none;
+  }
+
+  .navbar-collapse {
+    display: none !important;
+  }
+
+  .navbar .nav-link {
+    display: flex;
+    justify-content: center;
+    color: white;
+    font-size: 16px;
+    padding: 10px 0;
+  }
+
+  .navbar .nav-link:hover {
+    background: burlywood;
+    color: black;
+    border-radius: 5px;
+  }
+  
+  .offcanvas {
+    background-color: #f2d8db !important; /* Change la couleur de fond */
+    color: black !important; /* Change la couleur du texte */
+  }
+  
+  .offcanvas-header {
+    background-color: #e0bfc0 !important; /* Couleur de l'en-tête du Offcanvas */
+  }
+  
+  .offcanvas-body {
+    background-color: #fedbd1 !important; /* Couleur du corps du Offcanvas */
+  }
+  
+  .offcanvas .nav-link {
+    color: black !important; /* Change la couleur du texte des liens */
+  }
+  
+  .offcanvas .nav-link:hover {
+    background: burlywood !important;
+    color: white !important;
+    border-radius: 5px;
+  }
+  
 }
 
-/* Styling for active state */
-.navbar .nav-link.active {
-  background: linear-gradient(180deg, #F2D8DB 0%, #F2D8DB 66%); /* Dégradé pour l'état actif */
-  color: #3C3C3C; /* Couleur du texte pour l'état actif */
+@media (min-width: 769px) {
+  
+
+  .navbar {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background: transparent;
+    z-index: 1000;
+  }
+
+  /* Styling for the navigation items as buttons */
+  .navbar .nav-link {
+    display: block;
+    margin: 0 15px; /* Espacement augmenté */
+    padding: 12px 25px; /* Espacement augmenté */
+    border: none;
+    /* background: transparent; */
+    color: black; /* Couleur du texte plus sombre pour le contraste */
+    font-size: 18px; /* Taille du texte augmentée */
+    font-weight: 600; /* Poids du texte augmenté */
+    text-decoration: none;
+    transition: background-color 0.3s, color 0.3s, transform 0.3s;
+    border-radius: 8px; /* Coins arrondis pour les boutons */
+    /* text-shadow: 2px 2px black; */
+  }
+
+  /* Styling for hover state */
+  .navbar .nav-link:hover,
+  .navbar .nav-link:focus {
+    background: linear-gradient(180deg, #f2d8db 0%, #f2d8db 66%); /* Dégradé au survol */
+    color: #3c3c3c; /* Couleur du texte au survol, contrastée avec le fond */
+    transform: scale(1.05); /* Agrandissement léger du bouton */
+  }
+
+  /* Styling for active state */
+  .navbar .nav-link.active {
+    background: linear-gradient(180deg, #f2d8db 0%, #f2d8db 66%); /* Dégradé pour l'état actif */
+    color: #3c3c3c; /* Couleur du texte pour l'état actif */
+  }
+}
+.navbar-scroll-hide {
+  position: fixed; /* Fixe la navbar en haut de l'écran */
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1040;
+  width: 100%;
+  transition: transform 0.3s ease-in-out; /* Animation pour la disparition */
+}
+
+.navbar-hidden {
+  transform: translateY(-100%); /* Cache la navbar en la déplaçant vers le haut */
 }

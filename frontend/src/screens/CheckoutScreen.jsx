@@ -18,10 +18,12 @@ function Checkout() {
   const [couponCode, setCouponCode] = useState("");
   const [paymentLoading, setPaymentLoading] = useState(false);
   const param = useParams();
+  const axios = apiInstance
 
   const fetchOrderData = () => {
-    apiInstance.get(`checkout/${param?.order_oid}/`).then((res) => {
+    axios.get(`checkout/${param?.order_oid}/`).then((res) => {
       setOrder(res.data);
+      console.log(res.data)
     });
   }
 
@@ -35,7 +37,7 @@ function Checkout() {
     formdata.append("coupon_code", couponCode);
 
     try {
-        const response = await apiInstance.post("coupon/", formdata);
+        const response = await axios.post("coupon/", formdata);
         fetchOrderData();
         Swal.fire({
             icon: response.data.icon,
@@ -48,25 +50,26 @@ function Checkout() {
 
   const payWithStripe = (event) => {
     setPaymentLoading(true);
-    event.target.form.submit();
-  }
+    event.preventDefault(); // Empêche la soumission automatique si nécessaire
+    document.getElementById("stripe-form").submit(); // Soumet le formulaire directement
+};
 
   return (
-    <main style={{marginTop:"200px"}}>
+    <main style={{marginTop:"90px"}}>
       <div className="container">
         <section>
           <div className="row gx-lg-5">
             <div className="col-lg-8 mb-4 mb-md-0">
               <section>
                 <div className="alert alert-warning">
-                  <strong>Vérifiez les détails de la livraison et de la commande</strong>
+                  <strong>Vérifiez attentivement vos coordonnées et les détails de la commande</strong>
                 </div>
                 <form>
-                  <h5 className="mb-4 mt-4">Adresse de Livraison</h5>
+                  <h5 style={{color:"black"}} className="mb-4 mt-4">Shipping Adress</h5>
                   <div className="row mb-4">
                     <div className="col-lg-12">
                       <div className="form-outline">
-                        <label className="form-label" htmlFor="full_name">Noms et Prénoms</label>
+                        <label className="form-label" htmlFor="full_name">Full Name</label>
                         <input
                           type="text"
                           readOnly
@@ -90,7 +93,7 @@ function Checkout() {
 
                     <div className="col-lg-6 mt-4">
                       <div className="form-outline">
-                        <label className="form-label" htmlFor="mobile">Numéro</label>
+                        <label className="form-label" htmlFor="mobile">Mobile</label>
                         <input
                           type="text"
                           readOnly
@@ -102,7 +105,7 @@ function Checkout() {
 
                     <div className="col-lg-6 mt-4">
                       <div className="form-outline">
-                        <label className="form-label" htmlFor="address">Adresse</label>
+                        <label className="form-label" htmlFor="address">Address</label>
                         <input
                           type="text"
                           readOnly
@@ -114,7 +117,7 @@ function Checkout() {
 
                     <div className="col-lg-6 mt-4">
                       <div className="form-outline">
-                        <label className="form-label" htmlFor="city">Ville</label>
+                        <label className="form-label" htmlFor="city">City</label>
                         <input
                           type="text"
                           readOnly
@@ -126,7 +129,7 @@ function Checkout() {
 
                     <div className="col-lg-6 mt-4">
                       <div className="form-outline">
-                        <label className="form-label" htmlFor="state">État</label>
+                        <label className="form-label" htmlFor="state">Province Code</label>
                         <input
                           type="text"
                           readOnly
@@ -138,7 +141,7 @@ function Checkout() {
 
                     <div className="col-lg-6 mt-4">
                       <div className="form-outline">
-                        <label className="form-label" htmlFor="country">Pays</label>
+                        <label className="form-label" htmlFor="country">Country</label>
                         <input
                           type="text"
                           readOnly
@@ -149,46 +152,46 @@ function Checkout() {
                     </div>
                   </div>
 
-                  <h5 className="mb-4 mt-4">Adresse de facturation</h5>
+                  {/* <h5 className="mb-4 mt-4">Adresse de facturation</h5>
                   <div className="form-check mb-2">
                     <input className="form-check-input me-2" type="checkbox" id="sameAddress" defaultChecked />
                     <label className="form-check-label" htmlFor="sameAddress">
                       Identique à l'adresse de livraison
                     </label>
-                  </div>
+                  </div> */}
                 </form>
               </section>
             </div>
             <div className="col-lg-4 mb-4 mb-md-0">
               <section className="shadow-4 p-4 rounded-5 mb-4">
-                <h5 className="mb-3">Résumé de la commande</h5>
+                <h5 style={{color:'black'}} className="mb-3">Order Summary</h5>
                 <div className="d-flex justify-content-between mb-3">
-                  <span>Sous-total</span>
-                  <span>{order.sub_total || '0'} frs</span>
+                  <span>Subtotal</span>
+                  <span>{order.sub_total || '0'} CAD</span>
                 </div>
                 <div className="d-flex justify-content-between">
-                  <span>Livraison</span>
-                  <span>{order.shipping_amount || '0'} frs</span>
+                  <span>Shipping</span>
+                  <span>{order.shipping_amount || '0'} CAD</span>
                 </div>
                 <div className="d-flex justify-content-between">
-                  <span>Taxe</span>
-                  <span>{order.tax_fee || '0'} frs</span>
+                  <span>Tax</span>
+                  <span>{order.tax_fee || '0'} CAD</span>
                 </div>
                 <div className="d-flex justify-content-between">
-                  <span>Frais de service</span>
-                  <span>{order.service_fee || '0'} frs</span>
+                  <span>Service Fee</span>
+                  <span>{order.service_fee || '0'} CAD</span>
                 </div>
 
                 {order.saved !== "0.00" &&
                   <div className="d-flex text-success fw-bold justify-content-between">
-                    <span>Réduction</span>
-                    <span>- {order.saved || '0'} frs</span>
+                    <span>Saved</span>
+                    <span>- {order.saved || '0'} CAD</span>
                   </div>
                 }
                 <hr className="my-4" />
                 <div className="d-flex justify-content-between fw-bold mb-5">
                   <span>Total</span>
-                  <span>{order.total || '0'} frs</span>
+                  <span>{order.total || '0'} CAD</span>
                 </div>
 
                 <section className="shadow p-3 d-flex mt-4 mb-4">
@@ -206,24 +209,24 @@ function Checkout() {
                 </section>
 
                 {paymentLoading ?
-                  <form action={`${SERVER_URL}/api/v1/stripe-checkout/${order?.oid}/`} method='POST'>
+                  <form id="stripe-form" action={`http://127.0.0.1:8000/api/v1/stripe-checkout/${order?.oid}/`} method="POST">
                     <button
                       onClick={payWithStripe}
                       disabled
                       type='submit'
-                      className="btn btn-primary btn-rounded w-100 mt-2"
+                      className="btn btn-rounded w-100 mt-2"
                       style={{ backgroundColor: "#635BFF" }}
                     >
                       Traitement... <i className='fas fa-spinner fa-spin'></i>
                     </button>
                   </form>
                   :
-                  <form action={`${SERVER_URL}/api/v1/stripe-checkout/${order?.oid}/`} method='POST'>
+                  <form id="stripe-form" action={`http://127.0.0.1:8000/api/v1/stripe-checkout/${order?.oid}/`} method='POST'>
                     <button
                       onClick={payWithStripe}
                       type='submit'
-                      className="btn btn-primary btn-rounded w-100 mt-2"
-                      style={{ backgroundColor: "#635BFF" }}
+                      className="btn btn-rounded w-100 mt-2"
+                      style={{  backgroundColor:'#fedbd1' }}
                     >
                       Payer maintenant avec (Stripe) <i className='fas fa-credit-card'></i>
                     </button>

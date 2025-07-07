@@ -27,7 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-cj++h#ea-^509sr*%+o+vx-k3av(bry$n5!4w*kf7-y%4j6d^h'
+SECRET_KEY = env('STRIPE_PUBLIC_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'base.apps.BaseConfig',
+    'anymail',
+    'ckeditor',
 
 ]
 
@@ -67,7 +69,7 @@ ROOT_URLCONF = 'backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -89,10 +91,10 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
      'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'lips_empire_by_arielle',
-        'USER': 'postgres',
-        'PASSWORD': 'Olivier1207.',
-        'HOST': 'localhost',
+        'NAME': env('DB_NAME'),
+        'USER': env('DB_USER'),
+        'PASSWORD': env('DB_PASSWORD'),
+        'HOST': env('DB_HOST'),
     }
 }
 
@@ -146,6 +148,48 @@ AUTH_USER_MODEL = 'base.User'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+#MAILGUN_API_KEY = env('MAILGUN_API_KEY')
+#MAILGUN_SENDER_DOMAIN = env('MAILGUN_SENDER_DOMAIN')
+
+"""ANYMAIL = {
+    # (exact settings here depend on your ESP...)
+    "MAILGUN_API_KEY":env('MAILGUN_API_KEY'),
+    "MAILGUN_SENDER_DOMAIN": env('MAILGUN_SENDER_DOMAIN')  # your Mailgun domain, if needed
+}
+FROM_EMAIL = "kangaholivier22@gmail.com"
+EMAIL_BACKEND = "anymail.backends.mailgun.EmailBackend",
+
+"""
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_HOST_USER = 'kangaholivier22@gmail.com'
+# EMAIL_HOST_PASSWORD = 'rqdz nmdo uzvm ftic'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+# Backend utilisé pour l'envoi des emails
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+# Configuration du serveur SMTP (serveur sortant)
+EMAIL_HOST = 'mail.lipsempirebyarielle.store'
+EMAIL_PORT = 465
+EMAIL_USE_SSL = True  # SSL activé pour le port 465
+
+# Authentification au serveur SMTP
+EMAIL_HOST_USER = 'service-clientel@lipsempirebyarielle.store'
+EMAIL_HOST_PASSWORD = 'JaX{Cnt^n__-'  # ⚠️ remplace par ton vrai mot de passe sécurisé
+
+# Adresse expéditeur par défaut
+DEFAULT_FROM_EMAIL = 'service-clientel@lipsempirebyarielle.store'
+
+# Optionnel : délais maximum avant de couper en cas de non-réponse
+EMAIL_TIMEOUT = 10  # en secondes
+
+# Optionnel : pour gérer les dates d’envoi selon le fuseau local
+EMAIL_USE_LOCALTIME = True
+
+
 
 STRIPE_PUBLIC_KEY = env('STRIPE_PUBLIC_KEY')
 STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY')

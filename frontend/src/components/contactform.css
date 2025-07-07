@@ -37,13 +37,14 @@ textarea.form-control {
 }
 
 .btn-form {
-    background-color: #FF6F6F; /* Couleur principale rose clair */
+    background-color: #fedbd1 ; /* Couleur principale rose clair */
     border: none;
     color: white;
 }
 
 .btn-form:hover {
-    background-color: #FF3B3B; /* Couleur principale rose foncé au survol */
+    background-color: #FF6F6F; /* Couleur principale rose clair */
+ /* Couleur principale rose foncé au survol */
 }
 
 .btn-form:focus {

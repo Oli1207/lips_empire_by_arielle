@@ -2,6 +2,7 @@ import React, {useState, useEffect} from 'react';
 import { login } from '../utils/auth';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../store/auth';
+import Swal from 'sweetalert2';
 
 function Login() {
     const [email, setEmail] = useState("");
@@ -24,19 +25,34 @@ function Login() {
     const handleLogin = async(e) => {
         e.preventDefault();
         setIsLoading(true);
-
+    
         const { error } = await login(email, password);
+    
         if (error) {
-            alert(error);
+            // Vérifier si l'erreur est liée au mot de passe
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Please review your credentials'
+            });
+            setIsLoading(false);
         } else {
+            Swal.fire({
+                icon: 'success',
+                title: 'Login Successful',
+                text: 'You have successfully logged in!'
+            });
+    
             navigate("/");
             resetForm();
+            setIsLoading(false);
         }
     }
+    
 
     return (
         <div style={{ 
-            marginTop: '100px', 
+            marginTop: '', 
             display: 'flex', 
             flexDirection: 'column', 
             alignItems: 'center', 
@@ -93,6 +109,7 @@ function Login() {
                         fontSize: '16px',
                         cursor: 'pointer'
                     }}
+                    disabled={isLoading}
                 >
                     {isLoading ? 'Loading...' : 'Login'}
                 </button>

@@ -1,12 +1,13 @@
 import React from 'react';
 import { Carousel } from 'react-bootstrap';
 import gloss1 from './gloss1.jpg';
-import gloss2 from './gloss.jpg';
+import gloss2 from './lips_empire_img.jpg';
 import gloss3 from './gloss3.jpg';
 
 const GlossCarousel = () => {
   return (
-    <Carousel style={styles.carousel}>
+    
+    <Carousel controls={false} indicators={false} style={styles.carousel}>
       <Carousel.Item style={styles.carouselItem}>
         <img
           className="d-block w-100"
@@ -15,11 +16,12 @@ const GlossCarousel = () => {
           style={styles.image}
         />
         <Carousel.Caption>
-          <h3>Bienvenue chez Lip's Empire By Arielle</h3>
-          <p>De l'envie à la réalité.</p>
+          <h3 style={{color:'black'}}>SUBLIMEZ VOS LÈVRES
+   </h3>
+          <p style={{color:'black'}}>Explorez notre sélection de gloss idéale pour toutes vos occasions</p>
         </Carousel.Caption>
       </Carousel.Item>
-      <Carousel.Item style={styles.carouselItem}>
+      {/* <Carousel.Item style={styles.carouselItem}>
         <img
           className="d-block w-100"
           src={gloss1}
@@ -42,7 +44,7 @@ const GlossCarousel = () => {
           <h3>Troisième slide</h3>
           <p>Texte descriptif pour le troisième slide.</p>
         </Carousel.Caption>
-      </Carousel.Item>
+      </Carousel.Item> */}
     </Carousel>
   );
 };
@@ -50,9 +52,10 @@ const GlossCarousel = () => {
 const styles = {
   carousel: {
     background: 'linear-gradient(180deg, #F2D8DB 0%, #F2D8DB 66%)',
+    
   },
   carouselItem: {
-    height: '100vh',
+    height: '70vh',
     width: '100vw',
   },
   image: {

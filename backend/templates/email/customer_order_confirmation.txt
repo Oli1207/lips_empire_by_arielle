@@ -1,0 +1,15 @@
+Merci pour votre commande, {{ order.full_name }} !
+
+Votre commande #{{ order.oid }} a été confirmée.
+
+Détails de la commande :
+{% for item in order_items %}
+- {{ item.product.title }} x {{ item.qty }} - {{ item.total_price }} CAD
+{% endfor %}
+
+Total : {{ order.total }} CAD
+
+Vous pouvez suivre votre commande via ce lien :
+{{ lien_suivi }}
+
+Merci de votre confiance !

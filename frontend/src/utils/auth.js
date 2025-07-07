@@ -52,7 +52,7 @@ export const register = async (full_name, email, phone, password, password2) => 
 
         Toast.fire({
             icon: 'success',
-            title: "Bienvenue sur Findit"
+            title: "Welcome to Lip's Empire by Arielle"
           })
     
         return { data, error: null };

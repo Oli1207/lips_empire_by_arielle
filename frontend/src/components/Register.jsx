@@ -2,6 +2,7 @@ import React, {useState, useEffect} from 'react';
 import { register } from '../utils/auth';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../store/auth';
+import Swal from 'sweetalert2';
 
 function Register() {
   const [full_name, setFullname] = useState("");
@@ -24,23 +25,32 @@ function Register() {
     e.preventDefault();
     setIsLoading(true);
 
-    const {error} = await register(
-      full_name,
-      email,
-      phone,
-      password,
-      password2,
-    );
-    if(error){
-      alert(JSON.stringify(error));
-    }else{
-      navigate('/');
+    const { error } = await register(full_name, email, phone, password, password2);
+
+    if (error) {
+        // Vérifier si l'erreur est liée au mot de passe
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Please make sure your password contains at least one uppercase letter, one lowercase letter, one number, and is at least 8 characters long.'
+        });
+        setIsLoading(false);
+    } else {
+        Swal.fire({
+            icon: 'success',
+            title: 'Registration Successful',
+            text: 'Your account has been successfully created!'
+        });
+
+        navigate('/');
+        setIsLoading(false);
+        resetForm();
     }
-  }
+}
 
   return (
     <div style={{ 
-      marginTop: '150px', 
+      marginTop: '20px', 
       display: 'flex', 
       flexDirection: 'column', 
       alignItems: 'center', 

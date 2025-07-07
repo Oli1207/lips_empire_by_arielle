@@ -1,14 +1,16 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useContext } from 'react'
 import GlossCarousel from '../components/GlossCarousel'
 import apiInstance from '../utils/axios';
 import GetCurrentAddress from '../plugin/UserCountry';
 import UserData from '../plugin/UserData';
-import CardID from '../plugin/CardID';
+import CartID from '../plugin/CartID';
 import Swal from 'sweetalert2'
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './homescreen.css'
 import ContactForm from '../components/ContactForm';
 import show from './show.jpg';
+import { CartContext } from '../plugin/Context';
+
 
 const Toast = Swal.mixin({
   toast: true,
@@ -22,24 +24,39 @@ function HomeScreen() {
   
   const [products, setProducts] = useState([]);
   const [category, setCategory] = useState([]);
-  const [colorValue, setColorValue] = useState("No Color");
+  // const [colorValue, setColorValue] = useState("No Color");
   const [qtyValue, setQtyValue] = useState(1);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [selectedColors, setSelectedColors] = useState({});
-  
+  // const [selectedColors, setSelectedColors] = useState({});
+  const [showSpecifications, setShowSpecifications] = useState({});
+  const [search, setSearch] = useState("")
+  const [expandedDescriptions, setExpandedDescriptions] = useState({});
+  const [isSearching, setIsSearching] = useState(false);
   const currentAddress = GetCurrentAddress();
   const userData = UserData();
-  const cart_id = CardID();
+  console.log(userData)
+  const navigate = useNavigate()
+  const cart_id = CartID();
+  const axios = apiInstance
+  const [cartCount, setCartCount] = useContext(CartContext)
 
-  const handleColorButtonClick = (event, product_id, colorName) => {
-    setColorValue(colorName);
-    setSelectedProduct(product_id);
-
-    setSelectedColors((prevSelectedColors) => ({
-      ...prevSelectedColors,
-      [product_id]: colorName
+  const toggleDescriptionExpand = (productId) => {
+    setExpandedDescriptions((prev) => ({
+      ...prev,
+      [productId]: !prev[productId], // Toggle the state for the specific product
     }));
-  }
+  };
+
+
+  // const handleColorButtonClick = (event, product_id, colorName) => {
+  //   setColorValue(colorName);
+  //   setSelectedProduct(product_id);
+
+  //   setSelectedColors((prevSelectedColors) => ({
+  //     ...prevSelectedColors,
+  //     [product_id]: colorName
+  //   }));
+  // }
 
   const handleQtyChange = (event, product_id) => {
     setQtyValue(event.target.value);
@@ -47,7 +64,7 @@ function HomeScreen() {
   }
 
   useEffect(() => {
-    apiInstance.get("products/")
+    axios.get("products/")
       .then((response) => {
         setProducts(response.data);
         console.log(response.data);
@@ -55,7 +72,7 @@ function HomeScreen() {
   }, []);
 
   useEffect(() => {
-    apiInstance.get("category/")
+    axios.get("category/")
       .then((response) => {
         setCategory(response.data);
         console.log(response.data);
@@ -71,15 +88,79 @@ function HomeScreen() {
     formData.append("price", price);
     formData.append("shipping_amount", shipping_amount);
     formData.append("country", currentAddress.country);
-    formData.append("color", colorValue);
     formData.append("cart_id", cart_id);
 
-    const response = await apiInstance.post(`cart-view/`, formData);
+    const response = await axios.post(`cart-view/`, formData);
     Toast.fire({
       icon: 'success',
       title: response.data.message
     });
+
+    const url = userData ? `cart-list/${cart_id}/${userData?.user_id}/` : `cart-list/${cart_id}/`;
+    apiInstance.get(url).then((res) => {
+      setCartCount(res.data.length)
+    })
   }
+
+  const addToWishList = async (productId, userId) => {
+    if (!userData?.user_id) {
+      // Si l'utilisateur n'est pas connecté
+      Swal.fire({
+        icon: 'warning',
+        title: 'Connectez-vous',
+        text: 'Veuillez vous connecter pour ajouter cet article à votre wishlist !',
+        showCancelButton: true,
+        confirmButtonText: 'Se connecter',
+        cancelButtonText: 'Annuler',
+        customClass: {
+          confirmButton: 'custom-confirm-button', // Classe personnalisée pour le bouton de confirmation
+          cancelButton: 'custom-cancel-button',  // Classe personnalisée pour le bouton d'annulation
+        
+        },
+        buttonsStyling: false,
+      }).then((result) => {
+        if (result.isConfirmed) {
+          navigate('/login'); // Redirige l'utilisateur vers la page de connexion
+        }
+      });
+      return; // Quitte la fonction si l'utilisateur n'est pas connecté
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('product_id', productId);
+      formData.append('user_id', userId);
+
+      const response = await apiInstance.post(`customer/wishlist/${userId}/`, formData);
+      console.log(response.data);
+
+      Swal.fire({
+        icon: 'success',
+        title: response.data.message,
+      });
+    } catch (error) {
+      console.error(error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Erreur',
+        text: "Une erreur s'est produite lors de l'ajout à la wishlist.",
+      });
+    }
+  }
+
+ const toggleSpecifications = (productId) => {
+  setShowSpecifications((prev) => ({
+    ...prev,
+    [productId]: !prev[productId],
+  }));
+};
+const handleSearchChange = (event) =>  {
+  setSearch(event.target.value)
+}
+const handleSearchSubmit = () => {
+  navigate(`/search?query=${search}`)
+}
+
 
   return (
     <div>
@@ -88,15 +169,33 @@ function HomeScreen() {
       <section className="container mt-4">
         <div style={{marginTop:"80px"}} className="row">
           <div className="col-12">
+          <input
+              className="form-control me-2"
+              type="text"
+              placeholder="looking for particular gloss? try searching..."
+              onChange={handleSearchChange}
+              style={{ maxWidth: '600px', width: '100%' }}
+            />
+        <button
+    type="button"
+    onClick={handleSearchSubmit}
+    className="btn me-2 custom-btn"
+  >
+    {isSearching ? (
+      <span className="spinner-border spinner-border-sm"></span>
+    ) : (
+      'Rechercher'
+    )}
+  </button>
             <div className="product-scroll-container">
               {products?.map((p, index) => (
-                <div style={{height:"450px", width:"200px"}} className="product-card" key={index}>
+                <div className={`product-card ${showSpecifications[p.id] || expandedDescriptions[p.id] ? 'expanded' : ''}`} key={index}>
                   <div className="card shadow-sm border-light rounded">
                     <Link to={`/detail/${p.slug}`}>
                       <img
-                        src={p.image}
-                        className="card-img-top"
-                        style={{ maxHeight: "250px", objectFit: "cover" }}
+                         src={p?.image?.replace("backend.lipsempirebyarielle.store", "lipsempirebyarielle.store")}
+                        className="card-img-top product-image"
+                        // style={{ height: "70vh",width:"220px", objectFit: "cover" }}
                         alt={p.title}
                       />
                     </Link>
@@ -106,14 +205,73 @@ function HomeScreen() {
                           {p.title}
                         </Link>
                       </h5>
-                      <p className="card-text text-muted">{p.category?.title}</p>
+                       
+                      
+{/*                       
+                      <div className="toggle-container">
+
+   Section INGREDIENTS 
+
+  <div style={{ borderBottom:  "1px solid black"}}>
+  <button
+    className="toggle-btn"
+    onClick={() => toggleSpecifications(p.id)}
+  >
+    <span>
+      <b>INGRÉDIENTS</b>
+      {showSpecifications[p.id] ? " −" : " +"}
+    </span>
+  </button>
+  {showSpecifications[p.id] && (
+    <div className="toggle-content">
+      {p.specification?.map((spec, index) => (
+        <div key={index} className="d-flex">
+         {spec.content}
+        </div>
+      ))}
+    </div>
+  )}
+</div>
+   Section POURQUOI CE GLOSS 
+  <button
+    className="toggle-btn"
+    onClick={() => toggleDescriptionExpand(p.id)}
+  >
+    <span>
+      <b>POURQUOI CE GLOSS ?</b>
+      {expandedDescriptions[p.id] ? " −" : " +"}
+    </span>
+  </button>
+  {expandedDescriptions[p.id] && (
+    <div className="toggle-content">
+      <p>
+        Découvrez notre lip gloss hydratant, l’allié idéal pour
+        des lèvres glamour et en pleine santé. Formulé pour les
+        lèvres gercées, il offre une hydratation intense et une
+        réparation durable. Sa texture légère et non collante
+        glisse facilement, laissant une brillance éclatante et
+        une sensation de douceur. Enrichi en ingrédients
+        nourrissants, il protège et revitalise vos lèvres.
+        Dites adieu aux lèvres sèches et affichez un sourire
+        irrésistible. Adoptez ce must-have pour un look chic et
+        sophistiqué, tout en chouchoutant vos lèvres comme
+        jamais auparavant.
+      </p>
+    </div>
+  )}
+
+
+*/}
+
                       <div className="d-flex justify-content-between align-items-center mb-2">
-                        <h6 className="mb-0">{p.price}frs</h6>
-                        <h6 className="mb-0 text-muted"><strike>{p.old_price}</strike></h6>
+                        <h6 style={{color:'black'}} className="mb-0">{p.price}CAD</h6>
+                        {/* <h6 className="mb-0 text-muted"><strike>{p.old_price}</strike></h6> */}
+                        
                       </div>
                       <div className="btn-group-vertical w-100">
                         <button
-                          className="btn btn-primary dropdown-toggle w-100"
+                          className="btn dropdown-toggle w-100"
+                          style={{color: 'black',  backgroundColor:'#fedbd1'}}
                           type="button"
                           id={`dropdownMenuClickable${p.id}`}
                           data-bs-toggle="dropdown"
@@ -132,7 +290,7 @@ function HomeScreen() {
                               min="1"
                             />
                           </div>
-                          {p.color?.length > 0 &&
+                          {/* {p.color?.length > 0 &&
                           <div className="p-2">
                             <b>Color</b>: {selectedColors[p.id] || "Pas de Couleur"}
                             <div className="mt-2 d-flex flex-wrap">
@@ -145,20 +303,29 @@ function HomeScreen() {
                                 />
                               ))}
                             </div>
-                          </div>}
+                          </div>} */}
                           <div className="d-flex flex-column mt-2">
                             <button
                               type="button"
-                              className="btn btn-primary mb-2"
+                              style={{color: 'black', backgroundColor:'#fedbd1'}}
+                              className="btn  mb-2"
                               onClick={() => handleAddToCart(p.id, p.price, p.shipping_amount)}
+                              disabled={p.stock_qty === 0}
                             >
                               <i className="fas fa-shopping-cart me-2" />
-                              Ajouter au panier
+                              {p.stock_qty === 0 ? "Rupture de stock" : "Ajouter au panier"}
                             </button>
-                            <button type="button" className="btn btn-danger">
+                            <button 
+                            type="button"
+                            className="btn"
+                            style={{color:'black',  backgroundColor:'#fedbd1'}}
+                            onClick={() => addToWishList(p.id, userData?.user_id)}
+                            >
                               <i className="fas fa-heart me-2" />
                               Ajouter aux favoris
                             </button>
+                           
+                    
                           </div>
                         </ul>
                       </div>
@@ -191,4 +358,4 @@ function HomeScreen() {
   )
 }
 
-export default HomeScreen
+export default HomeScreen;

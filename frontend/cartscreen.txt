@@ -1,0 +1,150 @@
+
+  const fetchCartData = (cartId, userId) => {
+    const url = userId ? `cart-list/${cartId}/${userId}/` : `cart-list/${cartId}/`;
+    axios.get(url).then((res) => {
+      setCart(res.data);
+    });
+  };
+
+  const fetchCartTotal = (cartId, userId) => {
+    const url = userId ? `cart-detail/${cartId}/${userId}/` : `cart-detail/${cartId}/`;
+    axios.get(url).then((res) => {
+      setCartTotal(res.data);
+      
+    });
+  };
+
+  
+  if (cart_id !== null || cart_id !== undefined) {
+    if (userData !== undefined) {
+        useEffect(() => {
+            fetchCartData(cart_id, userData.user_id);
+            fetchCartTotal(cart_id, userData.user_id);
+        }, []);
+    } else {
+        useEffect(() => {
+            fetchCartData(cart_id, null);
+            fetchCartTotal(cart_id, null);
+        }, []);
+    }
+} else {
+    window.location.href("/");
+}
+
+
+  useEffect(() => {
+    const initialQuantities = {};
+    cart.forEach((c) => {
+      initialQuantities[c.product?.id] = c.qty;
+    });
+    setProductQuantities(initialQuantities);
+  }, [productQuantities]);
+
+  const handleQtyChange = (event, product_id) => {
+    const quantity = event.target.value;
+    setProductQuantities((prevQuantities) => ({
+      ...prevQuantities,
+      [product_id]: quantity,
+    }));
+  };
+
+  const updateCart = async (cart_id, item_id, product_id, price, shipping_amount) => {
+    const qtyValue = productQuantities[product_id];
+
+    const formData = new FormData();
+    formData.append("product_id", product_id);
+    formData.append("user_id", userData?.user_id);
+    formData.append("qty", qtyValue);
+    formData.append("price", price);
+    formData.append("color", color);
+    formData.append("shipping_amount", shipping_amount);
+    formData.append("country", currentAddress.country);
+    formData.append("cart_id", cart_id);
+
+    const response = await axios.post('cart-view/', formData);
+
+    fetchCartData(cart_id, userData?.user_id);
+    fetchCartTotal(cart_id, userData?.user_id);
+
+    Toast.fire({
+      icon: 'success',
+      title: response.data.message,
+    });
+  };
+
+  const handleDeleteCartItem = async (itemId) => {
+    const url = userData?.user_id
+      ? `cart-delete/${cart_id}/${itemId}/${userData?.user_id}/`
+      : `cart-delete/${cart_id}/${itemId}/`;
+
+    try {
+      await axios.delete(url);
+      fetchCartData(cart_id, userData?.user_id);
+      fetchCartTotal(cart_id, userData?.user_id);
+
+      Toast.fire({
+        icon: 'success',
+        title: 'Item removed from cart',
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+
+    switch (name) {
+      case 'fullName':
+        setFullName(value);
+        break;
+      case 'email':
+        setEmail(value);
+        break;
+      case 'mobile':
+        setMobile(value);
+        break;
+      case 'address':
+        setAddress(value);
+        break;
+      case 'city':
+        setCity(value);
+        break;
+      case 'state':
+        setState(value);
+        break;
+      case 'country':
+        setCountry(value);
+        break;
+      default:
+        break;
+    }
+  };
+
+  const createOrder = async () => {
+    if (!fullName || !email || !mobile || !address || !city || !state || !country) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Missing Fields!',
+        text: 'All fields are required before checkout!',
+      });
+    } else {
+      try {
+        const formdata = new FormData();
+        formdata.append('full_name', fullName);
+        formdata.append("email", email);
+        formdata.append("mobile", mobile);
+        formdata.append("address", address);
+        formdata.append("city", city);
+        formdata.append("state", state);
+        formdata.append("country", country);
+        formdata.append("cart_id", cart_id);
+        formdata.append("user_id", userData ? userData?.user_id : 0);
+
+        const response = await axios.post('create-order/', formdata);
+        navigate(`/checkout/${response.data.order_oid}/`);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  };

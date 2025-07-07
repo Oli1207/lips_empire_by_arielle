@@ -1,0 +1,6 @@
+*.pyc
+__pycache__/
+.env
+frontend/dist/
+backend/staticfiles/
+backend/media/

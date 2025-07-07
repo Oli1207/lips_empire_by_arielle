@@ -50,7 +50,7 @@ const ContactForm = () => {
 
     return (
         <div className="contact-container">
-            <h2 className='c-h2'>Contact Us</h2>
+            <h2 style={{color:"black"}} className='c-h2'>Contact Us</h2>
             <form onSubmit={handleSubmit}>
                 <div className="mb-3">
                     <label htmlFor="name" className="form-label">Name</label>
@@ -100,7 +100,7 @@ const ContactForm = () => {
                         required
                     ></textarea>
                 </div>
-                <button type="submit" className="btn-form btn-primary btn">Send</button>
+                <button style={{color:"black"}} type="submit" className="btn-form btn">Send</button>
             </form>
         </div>
     );
