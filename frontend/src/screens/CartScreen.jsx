@@ -212,19 +212,22 @@ function CartScreen() {
       });
       return;
     }
+    const needsProvince = country === "CA" || country === "US";
     if (
       !fullName ||
       !email ||
       !mobile ||
       !address ||
       !city ||
-      !state ||
-      !country
+      !country ||
+      (needsProvince && !state)
     ) {
       Swal.fire({
         icon: "warning",
-        title: "Missing Fields",
-        text: "Please fill in all fields before proceeding with the order.",
+        title: "Champs manquants",
+        text: needsProvince && !state
+          ? "Veuillez sélectionner votre province / état."
+          : "Veuillez remplir tous les champs obligatoires.",
       });
       return;
     }
@@ -544,48 +547,94 @@ function CartScreen() {
 
                         <div className="col-lg-6 mt-3">
                           <div className="form-outline">
-                            <label
-                              className="form-label"
-                              htmlFor="form6Example1"
-                            >
-                              Code de province
-                            </label>
-                            <input
-                              type="text"
-                              id="form6Example1"
-                              className="form-control"
-                              name="state"
-                              onChange={handleChange}
-                              value={state}
-                              maxLength={2}
-                              pattern="[A-Za-z]{2}"
-                              placeholder="EX : ON, QC"
-                            />
-                          </div>
-                        </div>
-                        <div className="col-lg-6 mt-3">
-                          <div className="form-outline">
-                            <label
-                              className="form-label"
-                              htmlFor="form6Example1"
-                            >
-                              Code du pays
-                            </label>
-                            <input
-                              type="text"
-                              id="form6Example1"
-                              className="form-control"
+                            <label className="form-label">Pays</label>
+                            <select
+                              className="form-select"
                               name="country"
                               value={country}
                               onChange={handleChange}
-                              placeholder="EX: CA, FR, US, GB"
-                              maxLength={2}
-                            />
-                            <small className="text-muted fst-italic">
-                              Code pays ISO à 2 lettres
-                            </small>
+                            >
+                              <option value="">-- Sélectionnez votre pays --</option>
+                              <optgroup label="Amérique du Nord">
+                                <option value="CA">🇨🇦 Canada</option>
+                                <option value="US">🇺🇸 États-Unis</option>
+                              </optgroup>
+                              <optgroup label="Europe">
+                                <option value="FR">🇫🇷 France</option>
+                                <option value="BE">🇧🇪 Belgique</option>
+                                <option value="CH">🇨🇭 Suisse</option>
+                                <option value="GB">🇬🇧 Royaume-Uni</option>
+                                <option value="DE">🇩🇪 Allemagne</option>
+                                <option value="ES">🇪🇸 Espagne</option>
+                                <option value="IT">🇮🇹 Italie</option>
+                                <option value="NL">🇳🇱 Pays-Bas</option>
+                                <option value="PT">🇵🇹 Portugal</option>
+                              </optgroup>
+                              <optgroup label="Autres">
+                                <option value="AU">🇦🇺 Australie</option>
+                                <option value="NZ">🇳🇿 Nouvelle-Zélande</option>
+                                <option value="JP">🇯🇵 Japon</option>
+                              </optgroup>
+                            </select>
                           </div>
                         </div>
+
+                        {(country === "CA" || country === "US") && (
+                          <div className="col-lg-6 mt-3">
+                            <div className="form-outline">
+                              <label className="form-label">
+                                {country === "CA" ? "Province" : "État"}{" "}
+                                <span className="text-danger">*</span>
+                              </label>
+                              <select
+                                className="form-select"
+                                name="state"
+                                value={state}
+                                onChange={handleChange}
+                              >
+                                <option value="">-- Sélectionner --</option>
+                                {country === "CA" && <>
+                                  <option value="AB">Alberta</option>
+                                  <option value="BC">Colombie-Britannique</option>
+                                  <option value="MB">Manitoba</option>
+                                  <option value="NB">Nouveau-Brunswick</option>
+                                  <option value="NL">Terre-Neuve</option>
+                                  <option value="NS">Nouvelle-Écosse</option>
+                                  <option value="ON">Ontario</option>
+                                  <option value="PE">Île-du-Prince-Édouard</option>
+                                  <option value="QC">Québec</option>
+                                  <option value="SK">Saskatchewan</option>
+                                  <option value="NT">Territoires du Nord-Ouest</option>
+                                  <option value="NU">Nunavut</option>
+                                  <option value="YT">Yukon</option>
+                                </>}
+                                {country === "US" && <>
+                                  <option value="AL">Alabama</option>
+                                  <option value="AK">Alaska</option>
+                                  <option value="AZ">Arizona</option>
+                                  <option value="CA">California</option>
+                                  <option value="CO">Colorado</option>
+                                  <option value="CT">Connecticut</option>
+                                  <option value="FL">Florida</option>
+                                  <option value="GA">Georgia</option>
+                                  <option value="HI">Hawaii</option>
+                                  <option value="IL">Illinois</option>
+                                  <option value="MA">Massachusetts</option>
+                                  <option value="MI">Michigan</option>
+                                  <option value="MN">Minnesota</option>
+                                  <option value="NJ">New Jersey</option>
+                                  <option value="NY">New York</option>
+                                  <option value="NC">North Carolina</option>
+                                  <option value="OH">Ohio</option>
+                                  <option value="PA">Pennsylvania</option>
+                                  <option value="TX">Texas</option>
+                                  <option value="VA">Virginia</option>
+                                  <option value="WA">Washington</option>
+                                </>}
+                              </select>
+                            </div>
+                          </div>
+                        )}
 
                         <div className="col-lg-6 mt-3">
                           <div className="form-outline">

@@ -310,55 +310,64 @@ class CreateOrderAPIView(generics.CreateAPIView):
                 return Response({
                     "error": f"Le produit '{item.product.title}' a seulement {item.product.stock_qty} unité(s) disponible(s), vous avez demandé {item.qty}. Actualisez la page.."
                 }, status=status.HTTP_400_BAD_REQUEST)
-        # Order Summary
-        total_shipping = Decimal(0.00)
-        total_tax = Decimal(0.00)
-        total_service_fee = Decimal(0.00)
-        total_sub_total = Decimal(0.00)
-        total_initial_total = Decimal(0.0)
-        total_total = Decimal(0.00)
-        
-        #total_total = sum(Decimal(c.total) for c in cart_items)
-        # Préparer les données de l'expédition
+        # Calcul des totaux AVANT de construire shipment_data
+        total_shipping = Decimal("0.00")
+        total_tax = Decimal("0.00")
+        total_service_fee = Decimal("0.00")
+        total_sub_total = Decimal("0.00")
+        total_initial_total = Decimal("0.00")
+        total_total = Decimal("0.00")
+        total_qty = 0
+
+        for c in cart_items:
+            total_sub_total += Decimal(str(c.sub_total))
+            total_tax += Decimal(str(c.tax_fee))
+            total_initial_total += Decimal(str(c.total))
+            total_total += Decimal(str(c.total))
+            total_qty += c.qty
+
+        # Poids estimé : 120g par unité (gloss + emballage)
+        estimated_weight = total_qty * 120
+
+        # province_code uniquement pour CA et US
+        country_upper = (country or "").upper()
+        needs_province = country_upper in ("CA", "US")
+
         shipment_data = {
             "name": full_name,
             "address_1": address,
-            "address_2": "",
             "city": city,
-            "province_code": state,
             "postal_code": postal_code,
-            "country_code": country,
+            "country_code": country_upper,
             "phone": str(mobile),
-            "package_contents": "merchandise",
-            "description": "Order shipment",
-            "value": str(total_total),
+            "description": "Gloss lèvres - cosmétiques",
+            "value": str(total_total.quantize(Decimal("0.01"))),
             "value_currency": "cad",
-            "order_id": "",
-            "order_store": "",
-            "package_type": "thick_envelope",
+            "package_type": "parcel",
             "weight_unit": "g",
-            "weight": 10,
+            "weight": estimated_weight,
             "size_unit": "cm",
-            "size_x": 10,
-            "size_y": 5,
-            "size_z": 2,
+            "size_x": 15,
+            "size_y": 10,
+            "size_z": 5,
             "insurance_requested": True,
             "signature_requested": False,
-            "vat_reference": "",
             "duties_paid_requested": False,
-            "cheapest_postage_type_requested": "yes",
-            "tracking_number": "",
             "ship_date": "today",
             "line_items": [
                 {
                     "quantity": c.qty,
                     "description": c.product.title,
-                    "value_amount": str(c.total),
-                    "currency_code": "CAD"
+                    "value_amount": str(Decimal(str(c.total)).quantize(Decimal("0.01"))),
+                    "currency_code": "CAD",
+                    "origin_country": "CA",
+                    "hs_code": "3304.10",
                 } for c in cart_items
             ]
         }
-        print("voici ship data", shipment_data, )
+
+        if needs_province and state:
+            shipment_data["province_code"] = state.upper()
         headers = {
             "Authorization": f"{CHITCHATS_API_KEY}",
             'Content-Type': 'application/json; charset=utf-8'
@@ -381,13 +390,6 @@ class CreateOrderAPIView(generics.CreateAPIView):
                 shipping_amount = Decimal(chosen_rate.get("payment_amount", "0.00"))
                 postage_type = chosen_rate.get("postage_type")
                 shipment_id = shipment_data.get("id")
-
-                # Calcul des totaux produits
-                for c in cart_items:
-                    total_sub_total += Decimal(c.sub_total)
-                    total_tax += Decimal(c.tax_fee)
-                    total_initial_total += Decimal(c.total)
-                    total_total += Decimal(c.total)
 
                 # Frais Stripe : 2.9% + 0.30 CAD sur (produits + livraison)
                 stripe_fee = (total_total + shipping_amount) * Decimal("0.029") + Decimal("0.30")
