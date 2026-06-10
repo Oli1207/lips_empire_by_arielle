@@ -195,10 +195,11 @@ const handleSearchKey = (e) => {
                   <div className="card shadow-sm border-light rounded">
                     <Link to={`/detail/${p.slug}`}>
                       <img
-                         src={p?.image?.replace("backend.lipsempirebyarielle.store", "lipsempirebyarielle.store")}
+                        src={p?.image?.replace("backend.lipsempirebyarielle.store", "lipsempirebyarielle.store")}
                         className="card-img-top product-image"
-                        // style={{ height: "70vh",width:"220px", objectFit: "cover" }}
                         alt={p.title}
+                        loading="lazy"
+                        decoding="async"
                       />
                     </Link>
                     <div className="card-body">

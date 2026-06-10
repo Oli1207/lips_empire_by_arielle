@@ -45,6 +45,14 @@ if ('serviceWorker' in navigator) {
   })
 }
 
+function ScrollToTop() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' })
+  }, [pathname])
+  return null
+}
+
 function TrackPageViews() {
   const location = useLocation()
   useEffect(() => {
@@ -71,6 +79,7 @@ function AppContent() {
 
   return (
     <CartContext.Provider value={[cartCount, setCartCount]}>
+      <ScrollToTop />
       <TrackPageViews />
       {!isAdminRoute && <Header />}
 

@@ -80,7 +80,7 @@ function AdminProducts() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 16 }}>
           {products.map(p => (
             <div key={p.id} style={{ background: '#fff', borderRadius: 12, border: '1px solid #eee', overflow: 'hidden' }}>
-              <img src={imgSrc(p.image)} alt={p.title} style={{ width: '100%', height: 160, objectFit: 'cover' }} onError={e => e.target.style.display = 'none'} />
+              <img src={imgSrc(p.image)} alt={p.title} style={{ width: '100%', height: 160, objectFit: 'cover' }} loading="lazy" decoding="async" onError={e => e.target.style.display = 'none'} />
               <div style={{ padding: '12px 14px' }}>
                 <p style={{ margin: '0 0 4px', fontWeight: 600, fontSize: 13, color: DARK, lineHeight: 1.3 }}>{p.title}</p>
                 <p style={{ margin: '0 0 8px', fontSize: 13, color: '#b85c3a', fontWeight: 700 }}>{parseFloat(p.price).toFixed(2)} CAD</p>

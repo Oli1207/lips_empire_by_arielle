@@ -91,10 +91,35 @@ class Product(models.Model):
     date = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
-        # Generate slug if it doesn't exist
         if not self.slug:
             self.slug = slugify(self.title)
         super().save(*args, **kwargs)
+        self._compress_image()
+
+    def _compress_image(self):
+        if not self.image or not hasattr(self.image, 'path'):
+            return
+        try:
+            from PIL import Image as PilImage
+            import os
+            path = self.image.path
+            if not os.path.exists(path):
+                return
+            _, ext = os.path.splitext(path)
+            if ext.lower() == '.webp':
+                return
+            with PilImage.open(path) as img:
+                img = img.convert('RGB')
+                max_dim = 1200
+                if img.width > max_dim or img.height > max_dim:
+                    img.thumbnail((max_dim, max_dim), PilImage.LANCZOS)
+                webp_path = os.path.splitext(path)[0] + '.webp'
+                img.save(webp_path, 'WEBP', quality=82, method=6)
+            new_name = os.path.splitext(self.image.name)[0] + '.webp'
+            os.remove(path)
+            Product.objects.filter(pk=self.pk).update(image=new_name)
+        except Exception:
+            pass
 
     def __str__(self):
         return self.title

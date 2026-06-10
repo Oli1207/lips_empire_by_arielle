@@ -46,7 +46,7 @@ const Review = ({ product, userData }) => {
 
         try {
             await apiInstance.post(`reviews/${product.id}/`, formData);
-            console.log(reviews)
+    
             fetchReviewData(); // Refresh reviews after submission
             setCreateReview({ ...createReview, review: "", rating: 0 }); // Reset form
         } catch (error) {
@@ -96,7 +96,7 @@ const Review = ({ product, userData }) => {
                         <div className="card mb-3" key={index}>
                             <div className="row border g-0">
                                 <div className="col-md-3">
-                                    <img src={r.profile.image} alt="User" className="img-fluid" />
+                                    <img src={r.profile.image} alt="User" className="img-fluid" loading="lazy" decoding="async" />
                                 </div>
                                 <div className="col-md-9">
                                     <div className="card-body">
