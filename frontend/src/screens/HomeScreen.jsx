@@ -29,6 +29,7 @@ function HomeScreen() {
   const [showSpecifications, setShowSpecifications] = useState({});
   const [search, setSearch] = useState("")
   const [expandedDescriptions, setExpandedDescriptions] = useState({});
+  const [imgLoaded, setImgLoaded] = useState({});
   const [isSearching, setIsSearching] = useState(false);
   const currentAddress = GetCurrentAddress();
   const userData = UserData();
@@ -193,14 +194,46 @@ const handleSearchKey = (e) => {
               {products?.map((p, index) => (
                 <div className={`product-card ${showSpecifications[p.id] || expandedDescriptions[p.id] ? 'expanded' : ''}`} key={index}>
                   <div className="card shadow-sm border-light rounded">
-                    <Link to={`/detail/${p.slug}`}>
+                    <Link to={`/detail/${p.slug}`} style={{ position: 'relative', display: 'block' }}>
+                      {!imgLoaded[p.id] && (
+                        <div style={{
+                          width: '100%', aspectRatio: '1/1',
+                          background: 'linear-gradient(90deg, #fce4dc 25%, #fedbd1 50%, #fce4dc 75%)',
+                          backgroundSize: '200% 100%',
+                          animation: 'shimmer 1.4s infinite',
+                          borderRadius: '8px 8px 0 0',
+                        }} />
+                      )}
                       <img
                         src={p?.image?.replace("backend.lipsempirebyarielle.store", "lipsempirebyarielle.store")}
                         className="card-img-top product-image"
                         alt={p.title}
                         loading="lazy"
                         decoding="async"
+                        onLoad={() => setImgLoaded(prev => ({ ...prev, [p.id]: true }))}
+                        style={{ display: imgLoaded[p.id] ? 'block' : 'none' }}
                       />
+                      {p.stock_qty > 0 && p.stock_qty <= 3 && (
+                        <span style={{
+                          position: 'absolute', top: 8, left: 8,
+                          background: '#1a1a1a', color: '#fedbd1',
+                          fontSize: 11, fontWeight: 700,
+                          padding: '4px 10px', borderRadius: 99,
+                          letterSpacing: '0.03em',
+                        }}>
+                          ⚡ Plus que {p.stock_qty}
+                        </span>
+                      )}
+                      {p.stock_qty === 0 && (
+                        <span style={{
+                          position: 'absolute', top: 8, left: 8,
+                          background: '#6b7280', color: '#fff',
+                          fontSize: 11, fontWeight: 700,
+                          padding: '4px 10px', borderRadius: 99,
+                        }}>
+                          Épuisé
+                        </span>
+                      )}
                     </Link>
                     <div className="card-body">
                       <h5 className="card-title">

@@ -25,12 +25,13 @@ function ProductDetailScreen() {
     const [product, setProduct] = useState({});
     const [specifications, setSpecifications] = useState([]);
     const [gallery, setGallery] = useState([]);
-    // const [color, setColor] = useState([]);
-    // const [colorValue, setColorValue] = useState("No Color");
     const [qtyValue, setQtyValue] = useState(1);
     const [showSpecifications, setShowSpecifications] = useState({});
     const [expandedDescriptions, setExpandedDescriptions] = useState({});
-    const [currentImage, setCurrentImage] = useState(""); // Ajout de l'état pour l'image affichée
+    const [currentImage, setCurrentImage] = useState("");
+    const [zoomed, setZoomed] = useState(false);
+    const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
+    const [related, setRelated] = useState([]);
     const param = useParams();
     const currentAddress = GetCurrentAddress();
     const userData = UserData();
@@ -61,10 +62,25 @@ function ProductDetailScreen() {
                 setSpecifications(res.data.specification);
                 setGallery(res.data.gallery);
                 trackEvent('view_product', { product_id: res.data.id, value: res.data.price });
-                setCurrentImage(res.data.image); // Définit l'image de base comme image initiale
-                
+                setCurrentImage(res.data.image);
+                if (res.data.category?.id) {
+                    apiInstance.get(`products/?category=${res.data.category.id}`)
+                        .then(r => setRelated(
+                            (r.data.results || r.data)
+                                .filter(p => p.slug !== res.data.slug)
+                                .slice(0, 4)
+                        ))
+                        .catch(() => {});
+                }
             });
     }, [param.slug]);
+
+    const handleZoomMove = (e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        setZoomPos({ x, y });
+    };
 
     // const handleColorButtonClick = (event) => {
     //     const colorNameInput = event.target.closest('.color_button').parentNode.querySelector(".color_name");
@@ -260,12 +276,23 @@ function ProductDetailScreen() {
                             <div className="">
                                 <div className="row gx-2 gx-lg-3">
                                     <div className="col-12 col-lg-12">
-                                        <div className="lightbox">
+                                        <div
+                                            className="lightbox"
+                                            style={{ position: 'relative', overflow: 'hidden', cursor: zoomed ? 'zoom-out' : 'zoom-in', borderRadius: 16 }}
+                                            onMouseMove={handleZoomMove}
+                                            onMouseEnter={() => setZoomed(true)}
+                                            onMouseLeave={() => setZoomed(false)}
+                                        >
                                             <img
                                                 src={getSafeImageURL(currentImage)}
-                                             
                                                 alt="Gallery image 1"
                                                 className="ecommerce-gallery-main-img active custom-img rounded-4"
+                                                style={{
+                                                    transition: 'transform 0.15s ease',
+                                                    transform: zoomed ? `scale(2)` : 'scale(1)',
+                                                    transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`,
+                                                    display: 'block', width: '100%',
+                                                }}
                                             />
                                         </div>
                                     </div>
@@ -548,7 +575,83 @@ function ProductDetailScreen() {
                             </div>
                         </div>
             </div>
+
+            {/* Cross-sell — Vous aimerez aussi */}
+            {related.length > 0 && (
+                <div className="container" style={{ marginTop: 48, marginBottom: 32 }}>
+                    <h4 style={{ fontWeight: 700, color: '#1a1a1a', marginBottom: 20 }}>Vous aimerez aussi</h4>
+                    <div style={{ display: 'flex', gap: 16, overflowX: 'auto', paddingBottom: 8 }}>
+                        {related.map(p => (
+                            <a
+                                key={p.id}
+                                href={`/detail/${p.slug}`}
+                                style={{ textDecoration: 'none', flexShrink: 0, width: 160 }}
+                            >
+                                <div style={{ background: '#fff', border: '1px solid #f0f0f0', borderRadius: 12, overflow: 'hidden' }}>
+                                    <div style={{ position: 'relative' }}>
+                                        <img
+                                            src={getSafeImageURL(p.image)}
+                                            alt={p.title}
+                                            loading="lazy"
+                                            decoding="async"
+                                            style={{ width: '100%', height: 160, objectFit: 'cover' }}
+                                        />
+                                        {p.stock_qty > 0 && p.stock_qty <= 3 && (
+                                            <span style={{
+                                                position: 'absolute', top: 6, left: 6,
+                                                background: '#1a1a1a', color: '#fedbd1',
+                                                fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 99,
+                                            }}>⚡ Plus que {p.stock_qty}</span>
+                                        )}
+                                    </div>
+                                    <div style={{ padding: '10px 12px' }}>
+                                        <p style={{ margin: '0 0 4px', fontSize: 13, fontWeight: 600, color: '#1a1a1a', lineHeight: 1.3 }}>{p.title}</p>
+                                        <p style={{ margin: 0, fontSize: 13, color: '#c97b63', fontWeight: 700 }}>{p.price} CAD</p>
+                                    </div>
+                                </div>
+                            </a>
+                        ))}
+                    </div>
+                </div>
+            )}
         </main>
+
+        {/* Sticky CTA mobile */}
+        <div style={{
+            display: 'none',
+            position: 'fixed', bottom: 0, left: 0, right: 0,
+            background: '#fff', borderTop: '1px solid #f0f0f0',
+            padding: '12px 16px', zIndex: 1000,
+            boxShadow: '0 -4px 16px rgba(0,0,0,0.08)',
+        }} className="sticky-mobile-cta">
+            <style>{`
+                @media (max-width: 768px) {
+                    .sticky-mobile-cta { display: flex !important; align-items: center; gap: 12px; }
+                }
+            `}</style>
+            <div style={{ flex: 1 }}>
+                <p style={{ margin: 0, fontSize: 12, color: '#888' }}>{product.title}</p>
+                <p style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#1a1a1a' }}>{product.price} CAD</p>
+            </div>
+            {product.stock_qty > 0 && product.stock_qty <= 3 && (
+                <span style={{ fontSize: 11, color: '#c97b63', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                    ⚡ Plus que {product.stock_qty}
+                </span>
+            )}
+            <button
+                onClick={handleAddToCart}
+                disabled={product.stock_qty === 0}
+                style={{
+                    background: product.stock_qty === 0 ? '#ccc' : '#1a1a1a',
+                    color: '#fedbd1', border: 'none', borderRadius: 10,
+                    padding: '12px 20px', fontWeight: 700, fontSize: 14,
+                    cursor: product.stock_qty === 0 ? 'not-allowed' : 'pointer',
+                    flexShrink: 0,
+                }}
+            >
+                {product.stock_qty === 0 ? 'Épuisé' : 'Ajouter au panier'}
+            </button>
+        </div>
     );
 }
 

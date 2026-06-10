@@ -34,19 +34,15 @@ export const addToCart = async (product_id, user_id, qty, price, shipping_amount
         // Send a POST request to the server's 'cart-view/' endpoint with the product information
         const response = await axios.post('cart-view/', formData);
 
-        // Log the response data from the server
-        console.log(response.data);
-
-        Toast.fire({
-            icon: 'success',
-            title: 'Added To Cart'
-        });
+        window.dispatchEvent(new CustomEvent('cart-item-added', {
+            detail: { product_id, price, qty }
+        }));
 
         // Set the loading state to "Added To Cart" upon a successful response
         
     } catch (error) {
         // Log any errors that occur during the request
-        console.log(error);
+        
 
         // Set the loading state to "An Error Occurred" in case of an error
         

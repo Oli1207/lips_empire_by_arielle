@@ -37,6 +37,8 @@ import AdminCoupons from './screens/admin/AdminCoupons'
 import AdminReviews from './screens/admin/AdminReviews'
 import AdminAnalytics from './screens/admin/AdminAnalytics'
 import AdminUsers from './screens/admin/AdminUsers'
+import CartSlideIn from './components/CartSlideIn'
+import AccountScreen from './screens/AccountScreen'
 
 // Enregistrement du Service Worker
 if ('serviceWorker' in navigator) {
@@ -82,6 +84,7 @@ function AppContent() {
       <ScrollToTop />
       <TrackPageViews />
       {!isAdminRoute && <Header />}
+      {!isAdminRoute && <CartSlideIn />}
 
       <Routes>
         {/* Routes publiques */}
@@ -98,6 +101,7 @@ function AppContent() {
         <Route path="/policy" element={<PolicyScreen />} />
         <Route path="/livraison" element={<LivraisonScreen />} />
         <Route path="/search" element={<Search />} />
+        <Route path="/account" element={<AccountScreen />} />
 
         {/* Routes Admin */}
         <Route path="/admin-panel/*" element={

@@ -7,13 +7,16 @@ import {
   faBook,
   faCartShopping,
   faHome,
+  faUser,
 } from "@fortawesome/free-solid-svg-icons";
+import { useAuthStore } from '../store/auth';
 import logo from "./logo_arielle.png";
 import "./header.css";
 import { CartContext } from "../plugin/Context";
 import { Link } from "react-router-dom";
 
 const Header = () => {
+  const isLoggedIn = useAuthStore(s => s.isLoggedIn)
   const [showLogo, setShowLogo] = useState(true);
   const [showContent, setShowContent] = useState(false);
   const [showOffcanvas, setShowOffcanvas] = useState(false); // Pour l'Offcanvas
@@ -74,7 +77,7 @@ const Header = () => {
             {/* Logo */}
             <Navbar.Brand
               className="mx-auto"
-              style={{ width: "300px", height: "130px" }}
+              style={{ width: "300px", height: "150px" }}
             >
               <Link
                 to="/"
@@ -83,7 +86,7 @@ const Header = () => {
                 <img
                   src={logo}
                   alt="Brand Logo"
-                  style={{ height: "100%", width: "100%" }}
+                  style={{ height: "100%", width: "100%",  objectFit: "contain" }}
                 />
               </Link>
             </Navbar.Brand>
@@ -132,15 +135,32 @@ const Header = () => {
                   <FontAwesomeIcon icon={faBookOpen} />
                   <span style={{color:"black"}} className="ms-2">POLITIQUE DE L'ENTREPRISE</span>
                 </Nav.Link>
-                <Nav.Link href="/livraison" className="nav-link">
+                {/* <Nav.Link href="/livraison" className="nav-link">
                   <FontAwesomeIcon icon={faTruckFast} />
                   <span style={{color:"black"}} className="ms-2">A PROPOS</span>
-                </Nav.Link>
+                </Nav.Link> */}
                 <Nav.Link href="/cart" className="nav-link">
                   <FontAwesomeIcon icon={faCartShopping} />
                   {cartCount}
                   <span style={{color:"black"}} className="ms-2">PANIER</span>
                 </Nav.Link>
+                {isLoggedIn() && (
+                  <Nav.Link href="/account" className="nav-link">
+                    <FontAwesomeIcon icon={faUser} />
+                    <span style={{color:"black"}} className="ms-2">MON COMPTE</span>
+                  </Nav.Link>
+                )}
+                {isLoggedIn() && (
+                  <Nav.Link href="/logout" className="nav-link">
+                    <span style={{color:"black", fontSize: 12}}>DÉCONNEXION</span>
+                  </Nav.Link>
+                )}
+                {!isLoggedIn() && (
+                  <Nav.Link href="/login" className="nav-link">
+                    <FontAwesomeIcon icon={faUser} />
+                    <span style={{color:"black"}} className="ms-2">CONNEXION</span>
+                  </Nav.Link>
+                )}
               </Nav>
             </Navbar.Collapse>
 
@@ -173,6 +193,23 @@ const Header = () => {
                     {cartCount}
                     <span className="ms-2">PANIER</span>
                   </Nav.Link>
+                  {isLoggedIn() && (
+                    <Nav.Link href="/account" className="nav-link">
+                      <FontAwesomeIcon icon={faUser} />
+                      <span className="ms-2">MON COMPTE</span>
+                    </Nav.Link>
+                  )}
+                  {isLoggedIn() && (
+                    <Nav.Link href="/logout" className="nav-link">
+                      <span style={{ fontSize: 12 }}>DÉCONNEXION</span>
+                    </Nav.Link>
+                  )}
+                  {!isLoggedIn() && (
+                    <Nav.Link href="/login" className="nav-link">
+                      <FontAwesomeIcon icon={faUser} />
+                      <span className="ms-2">CONNEXION</span>
+                    </Nav.Link>
+                  )}
                 </Nav>
               </Offcanvas.Body>
             </Offcanvas>

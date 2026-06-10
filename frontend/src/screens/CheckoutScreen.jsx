@@ -57,6 +57,28 @@ function Checkout() {
   return (
     <main style={{ marginTop: "90px" }}>
       <SEO title="Paiement sécurisé" url="/checkout" noindex={true} />
+      <div style={{
+        background: '#fafafa', borderBottom: '1px solid #f0f0f0',
+        padding: '10px 0', marginBottom: 8,
+      }}>
+        <div className="container">
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 32, flexWrap: 'wrap' }}>
+            {[
+              { icon: '🔒', text: 'Paiement 100% sécurisé', sub: 'via Stripe' },
+              { icon: '📦', text: 'Livraison suivie', sub: 'Canada & international' },
+              { icon: '↩️', text: 'Retours acceptés', sub: 'sous 14 jours' },
+            ].map(({ icon, text, sub }) => (
+              <div key={text} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 20 }}>{icon}</span>
+                <div>
+                  <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#1a1a1a' }}>{text}</p>
+                  <p style={{ margin: 0, fontSize: 11, color: '#888' }}>{sub}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
       <div className="container">
         <section>
           <div className="row gx-lg-5">
