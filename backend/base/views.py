@@ -361,7 +361,7 @@ class CreateOrderAPIView(generics.CreateAPIView):
                     "value_amount": str(Decimal(str(c.total)).quantize(Decimal("0.01"))),
                     "currency_code": "CAD",
                     "origin_country": "CA",
-                    "hs_code": "3304.10",
+                    "hs_tariff_code": "330410",
                 } for c in cart_items
             ]
         }
