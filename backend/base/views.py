@@ -1,14 +1,19 @@
-from django.shortcuts import render, redirect, get_object_or_404
 from django.conf import settings
 from decimal import Decimal
 from django.template.loader import render_to_string
 from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from django.core.mail import send_mail
+from django.db import transaction
+
 
 from .models import *
 from .serializers import *
+
 import requests
 import json
+from django.views.decorators.cache import never_cache
+
 
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework import generics, status
@@ -16,9 +21,15 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 import stripe
-
+from django.shortcuts import redirect, HttpResponse, get_object_or_404, render
+from django.http import JsonResponse
+import base64
+from django.conf import settings
+from django.utils import timezone
 stripe.api_key = settings.STRIPE_SECRET_KEY
+from .utils import refresh_qbo_token_for, call_qbo_accounting_api
 
 CLIENT_ID = 396690
 CHITCHATS_API_KEY = "860417b18f004a8a936c0f7dbb7714f2"
@@ -26,13 +37,32 @@ CLIENT_ID_STAG= 507375
 CHITCHATS_API_KEY_STAG = "2d907c11db9244ff894d83741485978e"
 
 
+
+
+QBO_REDIRECT_URI="https://backend.lipsempirebyarielle.store/api/v1/callback/"
+QBO_ENV="production"   # "sandbox" pour test, "production" en vrai
+
+QBO_CLIENT_ID = "ABSM6vlHyhC34bCFzqrH3VvGkpMtkT6sRp8DhLUfiRcCCbIOfz"
+QBO_CLIENT_SECRET = "OlJIkybyiTT29Fl4Uy15k5ShkVYDdCDYRXdf6te1"
+
+QBO_OAUTH_AUTHORIZE = "https://appcenter.intuit.com/connect/oauth2"
+QBO_OAUTH_TOKEN = "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer"
+
+# Base URL API selon sandbox ou prod
+QBO_API_BASE = "https://sandbox-quickbooks.api.intuit.com/v3/company" if QBO_ENV == "sandbox" else "https://quickbooks.api.intuit.com/v3/company"
+
+
+
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
+
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = (AllowAny, )
     serializer_class = RegisterSerializer
+    
+
 
 class ProfileView(generics.RetrieveAPIView):
     serializer_class = ProfileSerializer
@@ -52,10 +82,13 @@ class CategoryListAPIView(generics.ListAPIView):
     serializer_class = CategorySerializer
     permission_classes = [AllowAny]
 
+
+
 class ProductListAPIView(generics.ListAPIView):
-    queryset = Product.objects.all()
+    queryset = Product.objects.all().order_by('date')
     serializer_class = ProductSerializer
     permission_classes = [AllowAny]
+
 
 class ProductDetailAPIView(generics.RetrieveAPIView):
     serializer_class = ProductSerializer
@@ -66,6 +99,7 @@ class ProductDetailAPIView(generics.RetrieveAPIView):
         return Product.objects.get(slug=slug)
     
 
+@method_decorator(never_cache, name='dispatch')
 class CartAPIView(generics.ListCreateAPIView):
     queryset = Cart.objects.all()
     serializer_class = CartSerializer
@@ -135,6 +169,7 @@ class CartAPIView(generics.ListCreateAPIView):
             return Response({'message': "Cart created successfully"}, status=status.HTTP_201_CREATED)
 
 
+@method_decorator(never_cache, name='dispatch')
 class CartListView(generics.ListAPIView):
     serializer_class = CartSerializer
     permission_classes = [AllowAny]
@@ -154,6 +189,7 @@ class CartListView(generics.ListAPIView):
 
 
 
+@method_decorator(never_cache, name='dispatch')
 class CartDetailView(generics.RetrieveAPIView):
     serializer_class = CartSerializer
     permission_classes = [AllowAny]
@@ -212,8 +248,8 @@ class CartDetailView(generics.RetrieveAPIView):
         
     def calculate_total(self, cart_item):
         return cart_item.total
- 
-    
+
+@method_decorator(never_cache, name='dispatch')
 class CartItemDeleteAPIView(generics.DestroyAPIView):
     serializer_class = CartSerializer
     lookup_field = 'cart_id'  
@@ -231,7 +267,9 @@ class CartItemDeleteAPIView(generics.DestroyAPIView):
 
         return cart
     
+
  
+@method_decorator(never_cache, name='dispatch')
 class CreateOrderAPIView(generics.CreateAPIView):
     serializer_class = CartOrderSerializer
     queryset = CartOrder.objects.all()
@@ -241,6 +279,8 @@ class CreateOrderAPIView(generics.CreateAPIView):
         payload = request.data
 
         # Extract Order Details
+        
+        # Exemple pour chaque champ
         full_name = payload.get('full_name')
         email = payload.get('email')
         mobile = payload.get('mobile')
@@ -248,8 +288,14 @@ class CreateOrderAPIView(generics.CreateAPIView):
         city = payload.get('city')
         state = payload.get('state')
         country = payload.get('country')
+        postal_code = payload.get('postal_code')
         cart_id = payload.get('cart_id')
         user_id = payload.get('user_id')
+        terms_accepted = str(payload.get('terms_accepted', '')).lower() in ('true', '1', 'yes')
+        
+        if not terms_accepted:
+            return Response({"error": "Vous devez accepter les Conditions générales de vente."}, status=status.HTTP_400_BAD_REQUEST)
+
 
         # Fetch User
         user = User.objects.filter(id=user_id).first()
@@ -280,7 +326,7 @@ class CreateOrderAPIView(generics.CreateAPIView):
             "address_2": "",
             "city": city,
             "province_code": state,
-            "postal_code": payload.get("postal_code", ""),
+            "postal_code": postal_code,
             "country_code": country,
             "phone": str(mobile),
             "package_contents": "merchandise",
@@ -349,8 +395,10 @@ class CreateOrderAPIView(generics.CreateAPIView):
                     city=city,
                     state=state,
                     country=country,
+                    postal_code=postal_code,
                     shipping_amount=shipping_amount,
-                    shipment_id=shipment_id
+                    shipment_id=shipment_id,
+                    terms_accepted=True,
                 )
 
                 for c in cart_items:
@@ -405,7 +453,8 @@ class CreateOrderAPIView(generics.CreateAPIView):
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
- 
+
+@method_decorator(never_cache, name='dispatch')
 class CheckOutView(generics.RetrieveAPIView):
     serializer_class = CartOrderSerializer
     lookup_field = 'order_oid'
@@ -418,6 +467,7 @@ class CheckOutView(generics.RetrieveAPIView):
 
 
 
+@method_decorator(never_cache, name='dispatch')
 class CouponAPIView(generics.CreateAPIView):
     serializer_class = CouponSerializer
     queryset = Coupon.objects.all()
@@ -461,6 +511,8 @@ class CouponAPIView(generics.CreateAPIView):
 
 
 
+
+@method_decorator(never_cache, name='dispatch')
 class OrdersAPIView(generics.ListAPIView):
     serializer_class = CartOrderSerializer
     permission_classes = [AllowAny]
@@ -473,6 +525,7 @@ class OrdersAPIView(generics.ListAPIView):
         return orders
     
     
+@method_decorator(never_cache, name='dispatch')    
 class OrderDetailAPIView(generics.RetrieveAPIView):
     serializer_class = CartOrderSerializer
     permission_classes = [AllowAny]
@@ -485,40 +538,45 @@ class OrderDetailAPIView(generics.RetrieveAPIView):
 
         order = CartOrder.objects.get(user=user, oid=order_oid)
         return order
+        
 
 
-class StripeCheckoutView(generics.CreateAPIView):
-    serializer_class = CartOrderSerializer
+class CsrfExemptSessionAuthentication(SessionAuthentication):
+    def enforce_csrf(self, request):
+        return  # Ignore the CSRF check
+
+
+@method_decorator(never_cache, name='dispatch')
+class StripeCheckoutView(APIView):
+    authentication_classes = [CsrfExemptSessionAuthentication, BasicAuthentication]
     permission_classes = [AllowAny]
-    queryset = CartOrder.objects.all()
+
 
     
-    def create(self, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         order_oid = self.kwargs['order_oid']
-        order = CartOrder.objects.get(oid=order_oid)
-
-        if not order:
+        try:
+            order = CartOrder.objects.get(oid=order_oid)
+        except CartOrder.DoesNotExist:
             return Response({"message": "Order Not Found"}, status=status.HTTP_404_NOT_FOUND)
 
         try:
             checkout_session = stripe.checkout.Session.create(
                 customer_email=order.email,
                 payment_method_types=['card'],
-                line_items=[
-                    {
-                        'price_data':{
-                            'currency': 'cad',
-                            'product_data':{
-                                'name':order.full_name,
-                            },
-                            'unit_amount': int(order.total * 100)
+                line_items=[{
+                    'price_data': {
+                        'currency': 'cad',
+                        'product_data': {
+                            'name': order.full_name,
                         },
-                        'quantity': 1,
-                    }
-                ],
+                        'unit_amount': int(order.total * 100),
+                    },
+                    'quantity': 1,
+                }],
                 mode='payment',
-                success_url='http://localhost:5173/payment-success/' + order.oid + '?session_id={CHECKOUT_SESSION_ID}',
-                cancel_url='http://localhost:5173/payment-failed?session_id={CHECKOUT_SESSION_ID}'
+                success_url=f'https://lipsempirebyarielle.store/payment-success/{order.oid}?session_id={{CHECKOUT_SESSION_ID}}',
+                cancel_url='https://lipsempirebyarielle.store/payment-failed?session_id={CHECKOUT_SESSION_ID}'
             )
 
             order.stripe_session_id = checkout_session.id
@@ -530,6 +588,93 @@ class StripeCheckoutView(generics.CreateAPIView):
             return Response({"error": f'something went wrong: {str(e)}'})
 
 
+
+
+
+def quickbooks_connect(request):
+    params = {
+        "client_id": QBO_CLIENT_ID,
+        "response_type": "code",
+        "scope": "com.intuit.quickbooks.accounting",
+        "redirect_uri": QBO_REDIRECT_URI,
+        "state": "connect_from_platform"
+    }
+    qs = "&".join(f"{k}={requests.utils.quote(v)}" for k, v in params.items())
+    return redirect(f"{QBO_OAUTH_AUTHORIZE}?{qs}")
+
+@csrf_exempt
+def quickbooks_callback(request):
+    # Intuit renvoie GET ?code=...&realmId=...
+    code = request.GET.get("code")
+    realmId = request.GET.get("realmId")
+    error = request.GET.get("error")
+    if error:
+        # render page that notifies opener of error then closes
+        return render(request, "qbo_callback_response.html", {"status": "error", "message": error})
+
+    if not code or not realmId:
+        return render(request, "qbo_callback_response.html", {"status": "error", "message": "Missing code or realmId"})
+
+    # Exchange code for tokens (server-to-server)
+    basic = base64.b64encode(f"{QBO_CLIENT_ID}:{QBO_CLIENT_SECRET}".encode()).decode()
+    headers = {
+        "Authorization": f"Basic {basic}",
+        "Accept": "application/json",
+        "Content-Type": "application/x-www-form-urlencoded"
+    }
+    data = {"grant_type": "authorization_code", "code": code, "redirect_uri": QBO_REDIRECT_URI}
+    try:
+        r = requests.post(QBO_OAUTH_TOKEN, headers=headers, data=data, timeout=15)
+        r.raise_for_status()
+    except Exception as e:
+        return render(request, "qbo_callback_response.html", {"status": "error", "message": str(e)})
+
+    tokens = r.json()
+    access_token = tokens.get("access_token")
+    refresh_token = tokens.get("refresh_token")
+    expires_in = tokens.get("expires_in", 3600)
+    expires_at = timezone.now() + timezone.timedelta(seconds=int(expires_in))
+
+    # Stocke / update
+    QuickBooksCredentials.objects.update_or_create(
+        realm_id=realmId,
+        defaults={
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "token_expires_at": expires_at
+        }
+    )
+
+    # REND la page qui va postMessage {status: 'success'} et se fermer
+    return render(request, "qbo_callback_response.html", {"status": "success", "message": "Connected"})
+
+# --- status pour savoir si on est connecté ---
+def quickbooks_status(request):
+    qb = QuickBooksCredentials.objects.first()
+    if not qb:
+        return JsonResponse({"connected": False})
+    return JsonResponse({
+        "connected": True,
+        "realm_id": qb.realm_id,
+        "token_expires_at": qb.token_expires_at.isoformat()
+    })
+
+# --- disconnect (optionnel) : révoque token et supprime l'enregistrement ---
+@csrf_exempt
+def quickbooks_disconnect(request):
+    qb = QuickBooksCredentials.objects.first()
+    if not qb:
+        return JsonResponse({"message": "No QuickBooks connection"}, status=404)
+    # Facultatif: appeler endpoint revoke d'Intuit (si tu veux)
+    # basic = base64.b64encode(f"{settings.QBO_CLIENT_ID}:{settings.QBO_CLIENT_SECRET}".encode()).decode()
+    # headers = {"Authorization": f"Basic {basic}", "Content-Type": "application/x-www-form-urlencoded"}
+    # requests.post("https://developer.api.intuit.com/v2/oauth2/tokens/revoke", headers=headers, data={"token": qb.access_token})
+    qb.delete()
+    return JsonResponse({"message": "QuickBooks disconnected"})
+
+
+
+@method_decorator(never_cache, name='dispatch')
 class PaymentSuccessView(generics.CreateAPIView):
     serializer_class = CartOrderSerializer
     permission_classes = [AllowAny]
@@ -541,65 +686,109 @@ class PaymentSuccessView(generics.CreateAPIView):
         session_id = payload.get('session_id')
 
         if not order_oid or not session_id:
-            return Response({"message": "Order ID and Session ID are required"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": "Order ID and Session ID are required"},
+                            status=status.HTTP_400_BAD_REQUEST)
 
-        try:
-            order = CartOrder.objects.get(oid=order_oid)
-            order_items = CartOrderItem.objects.filter(order=order)
-        except CartOrder.DoesNotExist:
-            return Response({"message": "Order Not Found"}, status=status.HTTP_404_NOT_FOUND)
+        with transaction.atomic():
+            # 🔒 Lock de la commande
+            try:
+                order = CartOrder.objects.select_for_update().get(oid=order_oid)
+            except CartOrder.DoesNotExist:
+                return Response({"message": "Order Not Found"}, status=status.HTTP_404_NOT_FOUND)
 
-        try:
-            session = stripe.checkout.Session.retrieve(session_id)
-        except stripe.error.StripeError as e:
-            return Response({"error": f'Something went wrong: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-       
-        else:
-            print(session)
+            # --- Commande déjà payée ---
+            if order.payment_status == 'paid':
+                return Response({"message": "déjà payé"}, status=status.HTTP_200_OK)
+
+            # --- Récupération session Stripe ---
+            try:
+                session = stripe.checkout.Session.retrieve(session_id)
+            except stripe.error.StripeError as e:
+                return Response({"error": f"Erreur Stripe: {str(e)}"},
+                                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+            # --- Gestion des différents statuts ---
+            if session.payment_status == 'unpaid':
+                return Response({"message": "facture non payée"}, status=status.HTTP_400_BAD_REQUEST)
+            elif session.payment_status == 'canceled':
+                return Response({"message": "Paiement annulé"}, status=status.HTTP_400_BAD_REQUEST)
+            elif session.payment_status != 'paid':
+                return Response({"message": f"Une erreur s'est produite, réessayez (status={session.payment_status})"},
+                                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+            # --- Paiement validé ---
             if session.payment_status == 'paid':
+                # Marque la commande comme payée
                 order.payment_status = 'paid'
-                print(order)
-                order.save()
+                order.save(update_fields=['payment_status'])
 
-                shipment_id = order.shipment_id.lower()
-                lien_suivi = f"https://chitchats.com/tracking/{shipment_id}/"
-                context = {
-                    'order': order,
-                    'order_items': order_items,
-                    'lien_suivi': lien_suivi,
-                    
-                }
-                subject = "Order Placed Successfully"
-                text_body = render_to_string("email/customer_order_confirmation.txt", context)
-                html_body = render_to_string("email/customer_order_confirmation.html", context)
-                shipment_id = order.shipment_id.lower()
-               
+                # --- Envoi email client ---
+                order_items = CartOrderItem.objects.filter(order=order)
+                shipment_id = (order.shipment_id or "").lower()
+                lien_suivi = f"https://chitchats.com/tracking/{shipment_id}/" if shipment_id else None
+                context = {"order": order, "order_items": order_items, "lien_suivi": lien_suivi}
+
                 send_mail(
-                    subject=subject,
-                    message=text_body,
+                    subject="Order Placed Successfully",
+                    message=render_to_string("email/customer_order_confirmation.txt", context),
+                    html_message=render_to_string("email/customer_order_confirmation.html", context),
                     from_email=settings.EMAIL_HOST_USER,
                     recipient_list=[order.email],
-                    html_message=html_body,
-                    fail_silently=False,
+                    fail_silently=True  # ⚠️ ne bloque pas le frontend
                 )
-                   
-                   
-               
-                
-                return Response({'message': 'Paiement effectué avec succès'}, status=status.HTTP_200_OK)
-            elif session.payment_status == 'unpaid':
-                return Response({"message": "Facture non payée"}, status=status.HTTP_400_BAD_REQUEST)
-            elif session.payment_status == 'cancelled':
-                return Response({"message": "Paiement annulé"}, status=status.HTTP_400_BAD_REQUEST)
-            else:
-                return Response({"message": "Une erreur s'est produite, réessayez"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+                # --- QuickBooks non bloquant ---
+                qb_error = None
+                try:
+                    qb = QuickBooksCredentials.objects.first()
+                    if qb and qb.realm_id:
+                        invoice_lines = []
+                        for item in order_items:
+                            if not getattr(item.product, 'qbo_item_id', None):
+                                continue
+                            invoice_lines.append({
+                                "DetailType": "SalesItemLineDetail",
+                                "Amount": float(item.total),
+                                "SalesItemLineDetail": {
+                                    "ItemRef": {
+                                        "value": str(item.product.qbo_item_id),
+                                        "name": item.product.title
+                                    }
+                                }
+                            })
+                        if invoice_lines:
+                            invoice_payload = {"CustomerRef": {"value": "1"}, "Line": invoice_lines}
+                            resp = call_qbo_accounting_api(qb.realm_id, "POST", "/invoice", json_payload=invoice_payload)
+                            qb_invoice_id = resp.get("Invoice", {}).get("Id")
+                            if qb_invoice_id:
+                                order.qbo_invoice_id = qb_invoice_id
+                                order.save(update_fields=['qbo_invoice_id'])
+                    else:
+                        qb_error = "Aucune connexion QuickBooks configurée ou realm_id manquant"
+                except Exception as e:
+                    qb_error = str(e)
+
+                # --- Réponse finale avec message exact attendu par le frontend ---
+                response_data = {
+                    "message": "Paiement effectué avec succès",
+                    "order_oid": order.oid,
+                    "payment_status": order.payment_status,
+                    "order_status": order.order_status,
+                    "qbo_invoice_id": getattr(order, "qbo_invoice_id", None)
+                }
+                if qb_error:
+                    response_data["quickbooks_error"] = qb_error
+
+                return Response(response_data, status=status.HTTP_200_OK)
 
 
+@method_decorator(never_cache, name='dispatch')
 class ContactCreateView(generics.CreateAPIView):
     queryset = Contact.objects.all()
     serializer_class = ContactSerializer
     permission_classes = [AllowAny]
     
+
 
 class ReviewListAPIView(generics.ListCreateAPIView):
     serializer_class = ReviewSerializer
@@ -633,6 +822,7 @@ class ReviewListAPIView(generics.ListCreateAPIView):
 
 
 
+@method_decorator(never_cache, name='dispatch')
 class WishListAPIView(generics.ListCreateAPIView):
     serializer_class = WishlistSerializer
     permission_classes = [AllowAny]
@@ -663,6 +853,7 @@ class WishListAPIView(generics.ListCreateAPIView):
         
         
 
+@method_decorator(never_cache, name='dispatch')
 class SearchProductAPIView(generics.ListCreateAPIView):
     serializer_class = ProductSerializer
     permission_classes = [AllowAny]
@@ -671,3 +862,8 @@ class SearchProductAPIView(generics.ListCreateAPIView):
         query = self.request.GET.get("query")
         products = Product.objects.filter(title__icontains=query)
         return products
+        
+
+# integrations/views.py
+
+

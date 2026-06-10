@@ -8,6 +8,7 @@ from django.dispatch import receiver
 from ckeditor.fields import RichTextField
 
 
+
 class User(AbstractUser):
     username = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
@@ -78,6 +79,7 @@ class Product(models.Model):
     category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True, blank=True)
     price = models.DecimalField(decimal_places=2, max_digits=12, default=0.00)
     old_price = models.DecimalField(decimal_places=2, max_digits=12, default=0.00)
+    qbo_item_id = models.CharField(max_length=100, blank=True, null=True)
     shipping_amount = models.DecimalField(decimal_places=2, max_digits=12, default=0.00)
     stock_qty = models.PositiveIntegerField(default=1)
     in_stock = models.BooleanField(default=True)
@@ -105,7 +107,6 @@ class Product(models.Model):
 
     def color(self):
         return Color.objects.filter(product=self)
-
 
 class Gallery(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
@@ -186,10 +187,13 @@ class CartOrder(models.Model):
     city = models.CharField(max_length=100, null=True, blank=True)
     state = models.CharField(max_length=100, null=True, blank=True)
     country = models.CharField(max_length=100, null=True, blank=True)
+    postal_code = models.CharField(max_length=100, null=True, blank=True)
     shipment_id =  models.CharField(max_length=1000, null=True, blank=True)
     stripe_session_id = models.CharField(max_length=1000, null=True, blank=True)
+    qbo_invoice_id = models.CharField(max_length=1000, null=True, blank=True)
     oid = ShortUUIDField(unique=True, length=10, alphabet="abcdefghijklmnopqrstuvwxyz")
     date  = models.DateTimeField(auto_now_add=True)
+    terms_accepted = models.BooleanField(default=False)
 
     def __str__(self):
         return self.oid
@@ -292,3 +296,28 @@ class Review(models.Model):
 def update_product_rating(sender, instance, **kwargs):
     if instance.product:
         instance.product.save()
+        
+        
+        
+
+class QuickBooksCredentials(models.Model):
+    """
+    Stocke les tokens pour une entreprise QuickBooks connectée (realmId).
+    On supporte plusieurs clients/companies si nécessaire.
+    """
+    company_name = models.CharField(max_length=255, blank=True, null=True)
+    realm_id = models.CharField(max_length=100, unique=True)  # Company ID fourni par Intuit
+    access_token = models.TextField()
+    refresh_token = models.TextField()
+    token_expires_at = models.DateTimeField()  # datetime quand access_token expire
+    # Méta
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def is_access_token_expired(self, margin_seconds=60):
+        """Retourne True si le token va expirer dans margin_seconds (sécurité)."""
+        return timezone.now() >= (self.token_expires_at - timezone.timedelta(seconds=margin_seconds))
+
+    def __str__(self):
+        return f"QB:{self.realm_id} ({self.company_name or 'unnamed'})"
+

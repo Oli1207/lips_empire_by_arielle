@@ -95,7 +95,6 @@ class ColorSerializer(serializers.ModelSerializer):
 
 class ProductSerializer(serializers.ModelSerializer):
     gallery = GallerySerializer(many=True, read_only=True)
-    color = ColorSerializer(many=True, read_only=True)
     specification = SpecificationSerializer(many=True, read_only=True)
     category = CategorySerializer(read_only=True)
     
@@ -116,7 +115,6 @@ class ProductSerializer(serializers.ModelSerializer):
                    'status',
                    'views',
                    'gallery',
-                   'color',
                    'specification',
                    'pid',
                    'slug',

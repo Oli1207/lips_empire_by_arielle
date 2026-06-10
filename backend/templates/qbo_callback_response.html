@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>QuickBooks Connect</title>
+  </head>
+  <body>
+    <script>
+      // Envoie un message au window.opener (frontend) pour dire si c'est ok
+      (function(){
+        var status = "{{ status }}";
+        var message = "{{ message|escapejs }}";
+        try {
+          if (window.opener && !window.opener.closed) {
+            window.opener.postMessage({ provider: "quickbooks", status: status, message: message }, window.location.origin);
+          }
+        } catch(e) {
+          console.error(e);
+        }
+        // ferme la popup après un court délai
+        setTimeout(function(){ window.close(); }, 800);
+      })();
+    </script>
+    <p>Connexion QuickBooks : {{ status }}</p>
+  </body>
+</html>

@@ -38,6 +38,12 @@ urlpatterns = [
     
     
     path('search/', views.SearchProductAPIView.as_view()),
+    
+        path('connect/', views.quickbooks_connect, name='qbo_connect'),
+    path('callback/', views.quickbooks_callback, name='qbo_callback'),  # doit rendre une page JS qui postMessage + close
+    path('status/', views.quickbooks_status, name='qbo_status'),        # vérifie si QuickBooks est connecté
+    path('disconnect/', views.quickbooks_disconnect, name='qbo_disconnect'),  # révoque et supprime les tokens (optionnel)
+
 
   #path('image-search/', store_views.ImageSearchAPIView.as_view(), name='image-search'),
 ]  
