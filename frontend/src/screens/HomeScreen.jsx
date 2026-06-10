@@ -24,23 +24,21 @@ function HomeScreen() {
   
   const [products, setProducts] = useState([]);
   const [category, setCategory] = useState([]);
-  // const [colorValue, setColorValue] = useState("No Color");
-  const [qtyValue, setQtyValue] = useState(1);
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  // const [selectedColors, setSelectedColors] = useState({});
+  const [quantities, setQuantities] = useState({});
   const [showSpecifications, setShowSpecifications] = useState({});
   const [search, setSearch] = useState("")
   const [expandedDescriptions, setExpandedDescriptions] = useState({});
   const [isSearching, setIsSearching] = useState(false);
   const currentAddress = GetCurrentAddress();
   const userData = UserData();
-  console.log(userData)
+  
   const navigate = useNavigate()
   const cart_id = CartID();
   const axios = apiInstance
   const [cartCount, setCartCount] = useContext(CartContext)
 
   const toggleDescriptionExpand = (productId) => {
+
     setExpandedDescriptions((prev) => ({
       ...prev,
       [productId]: !prev[productId], // Toggle the state for the specific product
@@ -48,26 +46,20 @@ function HomeScreen() {
   };
 
 
-  // const handleColorButtonClick = (event, product_id, colorName) => {
-  //   setColorValue(colorName);
-  //   setSelectedProduct(product_id);
+  const getQty = (product_id) => quantities[product_id] ?? 1;
 
-  //   setSelectedColors((prevSelectedColors) => ({
-  //     ...prevSelectedColors,
-  //     [product_id]: colorName
-  //   }));
-  // }
-
-  const handleQtyChange = (event, product_id) => {
-    setQtyValue(event.target.value);
-    setSelectedProduct(product_id);
-  }
+  const changeQty = (product_id, delta) => {
+    setQuantities((prev) => ({
+      ...prev,
+      [product_id]: Math.max(1, (prev[product_id] ?? 1) + delta),
+    }));
+  };
 
   useEffect(() => {
     axios.get("products/")
       .then((response) => {
         setProducts(response.data);
-        console.log(response.data);
+      
       });
   }, []);
 
@@ -75,7 +67,7 @@ function HomeScreen() {
     axios.get("category/")
       .then((response) => {
         setCategory(response.data);
-        console.log(response.data);
+        
       });
   }, []);
 
@@ -84,7 +76,7 @@ function HomeScreen() {
 
     formData.append("product_id", product_id);
     formData.append("user_id", userData?.user_id);
-    formData.append("qty", qtyValue);
+    formData.append("qty", getQty(product_id));
     formData.append("price", price);
     formData.append("shipping_amount", shipping_amount);
     formData.append("country", currentAddress.country);
@@ -132,7 +124,7 @@ function HomeScreen() {
       formData.append('user_id', userId);
 
       const response = await apiInstance.post(`customer/wishlist/${userId}/`, formData);
-      console.log(response.data);
+      
 
       Swal.fire({
         icon: 'success',
@@ -154,11 +146,14 @@ function HomeScreen() {
     [productId]: !prev[productId],
   }));
 };
-const handleSearchChange = (event) =>  {
+const handleSearchChange = (event) => {
   setSearch(event.target.value)
 }
 const handleSearchSubmit = () => {
-  navigate(`/search?query=${search}`)
+  if (search.trim()) navigate(`/search?query=${search.trim()}`)
+}
+const handleSearchKey = (e) => {
+  if (e.key === 'Enter') handleSearchSubmit()
 }
 
 
@@ -172,8 +167,9 @@ const handleSearchSubmit = () => {
           <input
               className="form-control me-2"
               type="text"
-              placeholder="looking for particular gloss? try searching..."
+              placeholder="Rechercher un gloss..."
               onChange={handleSearchChange}
+              onKeyDown={handleSearchKey}
               style={{ maxWidth: '600px', width: '100%' }}
             />
         <button
@@ -264,70 +260,52 @@ const handleSearchSubmit = () => {
 */}
 
                       <div className="d-flex justify-content-between align-items-center mb-2">
-                        <h6 style={{color:'black'}} className="mb-0">{p.price}CAD</h6>
+                        <h6 style={{color:'black'}} className="mb-0">{p.price}{"  "}CAD</h6>
                         {/* <h6 className="mb-0 text-muted"><strike>{p.old_price}</strike></h6> */}
                         
                       </div>
-                      <div className="btn-group-vertical w-100">
+                      {/* Sélecteur de quantité */}
+                      <div className="d-flex align-items-center justify-content-center mb-2" style={{gap: '8px'}}>
                         <button
-                          className="btn dropdown-toggle w-100"
-                          style={{color: 'black',  backgroundColor:'#fedbd1'}}
                           type="button"
-                          id={`dropdownMenuClickable${p.id}`}
-                          data-bs-toggle="dropdown"
-                          aria-expanded="false"
+                          className="btn btn-sm"
+                          style={{backgroundColor:'#fedbd1', color:'black', width:'32px', padding:'0'}}
+                          onClick={() => changeQty(p.id, -1)}
+                          disabled={p.stock_qty === 0}
+                        >−</button>
+                        <span style={{minWidth:'24px', textAlign:'center', fontWeight:'600'}}>
+                          {getQty(p.id)}
+                        </span>
+                        <button
+                          type="button"
+                          className="btn btn-sm"
+                          style={{backgroundColor:'#fedbd1', color:'black', width:'32px', padding:'0'}}
+                          onClick={() => changeQty(p.id, 1)}
+                          disabled={p.stock_qty === 0 || getQty(p.id) >= p.stock_qty}
+                        >+</button>
+                      </div>
+
+                      {/* Boutons action */}
+                      <div className="d-flex flex-column" style={{gap:'8px'}}>
+                        <button
+                          type="button"
+                          style={{color: 'black', backgroundColor:'#fedbd1'}}
+                          className="btn w-100"
+                          onClick={() => handleAddToCart(p.id, p.price, p.shipping_amount)}
+                          disabled={p.stock_qty === 0}
                         >
-                          Variation
+                          <i className="fas fa-shopping-cart me-2" />
+                          {p.stock_qty === 0 ? "Rupture de stock" : "Ajouter au panier"}
                         </button>
-                        <ul className="dropdown-menu" aria-labelledby={`dropdownMenuClickable${p.id}`}>
-                          <div className="p-2">
-                            <b>Quantité</b>:
-                            <input
-                              className='form-control mt-2'
-                              value={qtyValue}
-                              onChange={(e) => handleQtyChange(e, p.id)}
-                              type='number'
-                              min="1"
-                            />
-                          </div>
-                          {/* {p.color?.length > 0 &&
-                          <div className="p-2">
-                            <b>Color</b>: {selectedColors[p.id] || "Pas de Couleur"}
-                            <div className="mt-2 d-flex flex-wrap">
-                              {p.color?.map((color, index) => (
-                                <button
-                                  key={index}
-                                  className="btn btn-sm me-2 mb-2"
-                                  style={{ backgroundColor: color.color_code }}
-                                  onClick={(e) => handleColorButtonClick(e, p.id, color.name)}
-                                />
-                              ))}
-                            </div>
-                          </div>} */}
-                          <div className="d-flex flex-column mt-2">
-                            <button
-                              type="button"
-                              style={{color: 'black', backgroundColor:'#fedbd1'}}
-                              className="btn  mb-2"
-                              onClick={() => handleAddToCart(p.id, p.price, p.shipping_amount)}
-                              disabled={p.stock_qty === 0}
-                            >
-                              <i className="fas fa-shopping-cart me-2" />
-                              {p.stock_qty === 0 ? "Rupture de stock" : "Ajouter au panier"}
-                            </button>
-                            <button 
-                            type="button"
-                            className="btn"
-                            style={{color:'black',  backgroundColor:'#fedbd1'}}
-                            onClick={() => addToWishList(p.id, userData?.user_id)}
-                            >
-                              <i className="fas fa-heart me-2" />
-                              Ajouter aux favoris
-                            </button>
-                           
-                    
-                          </div>
-                        </ul>
+                        <button
+                          type="button"
+                          className="btn w-100"
+                          style={{color:'black', backgroundColor:'#fedbd1'}}
+                          onClick={() => addToWishList(p.id, userData?.user_id)}
+                        >
+                          <i className="fas fa-heart me-2" />
+                          Favoris
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -339,7 +317,7 @@ const handleSearchSubmit = () => {
       </section>
 
       <section className="container mt-4">
-        <div style={{marginTop:"80px"}} className="row align-items-center">
+     {/*   <div style={{marginTop:"80px"}} className="row align-items-center">
           <div className="col-md-6">
             <img src={show} alt="Showcase" className="img-fluid" style={{height: "600px", width: "100%", objectFit: "cover"}} />
           </div>
@@ -351,8 +329,9 @@ const handleSearchSubmit = () => {
               Nos produits sont soigneusement sélectionnés pour vous offrir le meilleur. Que vous soyez à la recherche de nouveautés ou d’articles préférés, nous avons ce qu’il vous faut. Contactez-nous pour toute question ou pour passer une commande personnalisée.
             </p>
           </div>
-        </div>
+        </div>*/}
         <ContactForm />
+       
       </section>
     </div>
   )
