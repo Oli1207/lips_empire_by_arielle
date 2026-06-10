@@ -361,7 +361,8 @@ class CreateOrderAPIView(generics.CreateAPIView):
                     "value_amount": str(Decimal(str(c.total)).quantize(Decimal("0.01"))),
                     "currency_code": "CAD",
                     "origin_country": "CA",
-                    "hs_tariff_code": "330410",
+                    # US HTSUS requires 10 digits; other countries accept 6-digit HS code
+                    "hs_tariff_code": "3304100000" if country_upper == "US" else "330410",
                 } for c in cart_items
             ]
         }
