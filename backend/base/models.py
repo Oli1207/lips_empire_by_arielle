@@ -296,6 +296,58 @@ class Review(models.Model):
 def update_product_rating(sender, instance, **kwargs):
     if instance.product:
         instance.product.save()
+
+
+@receiver(post_save, sender=Product)
+def check_low_stock(sender, instance, **kwargs):
+    LOW_STOCK_THRESHOLD = 3
+    if instance.stock_qty > LOW_STOCK_THRESHOLD:
+        return
+    from django.utils import timezone as tz
+    from django.core.mail import send_mail
+    from django.template.loader import render_to_string
+    from django.conf import settings
+
+    cutoff = tz.now()
+
+    cart_user_ids = Cart.objects.filter(
+        product=instance, user__isnull=False
+    ).values_list('user_id', flat=True).distinct()
+
+    wishlist_user_ids = Wishlist.objects.filter(
+        product=instance, user__isnull=False
+    ).values_list('user_id', flat=True).distinct()
+
+    user_ids = set(cart_user_ids) | set(wishlist_user_ids)
+
+    already_notified = set(
+        ReminderLog.objects.filter(
+            reminder_type='low_stock',
+            product=instance,
+            user_id__in=user_ids,
+        ).values_list('user_id', flat=True)
+    )
+
+    to_notify = user_ids - already_notified
+
+    for user in User.objects.filter(id__in=to_notify).select_related():
+        try:
+            html = render_to_string('email/low_stock_alert.html', {
+                'user': user,
+                'product': instance,
+                'site_url': 'https://lipsempirebyarielle.store',
+            })
+            send_mail(
+                subject=f"⚡ Plus que {instance.stock_qty} en stock — {instance.title}",
+                message=f"Plus que {instance.stock_qty} exemplaire(s) de {instance.title} disponible(s).",
+                html_message=html,
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[user.email],
+                fail_silently=True,
+            )
+            ReminderLog.objects.create(user=user, reminder_type='low_stock', product=instance)
+        except Exception:
+            pass
         
         
         
@@ -335,6 +387,24 @@ class PushSubscription(models.Model):
 
     def __str__(self):
         return self.endpoint[:80]
+
+
+class ReminderLog(models.Model):
+    TYPES = (
+        ('cart_abandon', 'Abandon panier'),
+        ('wishlist', 'Wishlist'),
+        ('low_stock', 'Stock faible'),
+    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reminder_logs')
+    reminder_type = models.CharField(max_length=50, choices=TYPES)
+    product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, blank=True)
+    sent_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        indexes = [models.Index(fields=['user', 'reminder_type', 'sent_at'])]
+
+    def __str__(self):
+        return f"{self.user.email} — {self.reminder_type} — {self.sent_at.date()}"
 
 
 class QuickBooksCredentials(models.Model):

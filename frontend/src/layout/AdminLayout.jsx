@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard, ShoppingBag, Package, Tag,
-  Star, BarChart2, LogOut, Menu, X,
+  Star, BarChart2, LogOut, Menu, X, Users,
 } from 'lucide-react'
 
 const NAV = [
@@ -11,6 +11,7 @@ const NAV = [
   { path: '/admin-panel/products',  icon: Package,         label: 'Produits' },
   { path: '/admin-panel/coupons',   icon: Tag,             label: 'Coupons' },
   { path: '/admin-panel/reviews',   icon: Star,            label: 'Avis clients' },
+  { path: '/admin-panel/users',     icon: Users,           label: 'Utilisateurs' },
   { path: '/admin-panel/analytics', icon: BarChart2,       label: 'Analytics' },
 ]
 

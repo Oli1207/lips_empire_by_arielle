@@ -1276,3 +1276,147 @@ def sitemap_xml(request):
 
     lines.append('</urlset>')
     return HttpResponse('\n'.join(lines), content_type='application/xml')
+
+
+# ─── Admin : vue utilisateurs (cart + wishlist) ───────────────────────────────
+
+class AdminUserListView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def get(self, request):
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+
+        users = User.objects.filter(is_staff=False).order_by('-date_joined')
+        data = []
+        for u in users:
+            cart_items = Cart.objects.filter(user=u).select_related('product')
+            wishlist_items = Wishlist.objects.filter(user=u).select_related('product')
+            order_count = CartOrder.objects.filter(user=u, payment_status='paid').count()
+            last_reminder = ReminderLog.objects.filter(user=u).order_by('-sent_at').first()
+
+            data.append({
+                'id': u.id,
+                'email': u.email,
+                'full_name': u.full_name or u.email,
+                'date_joined': u.date_joined.strftime('%Y-%m-%d'),
+                'order_count': order_count,
+                'cart_count': cart_items.count(),
+                'wishlist_count': wishlist_items.count(),
+                'cart_total': float(sum(i.sub_total for i in cart_items)),
+                'last_reminder_type': last_reminder.reminder_type if last_reminder else None,
+                'last_reminder_date': last_reminder.sent_at.strftime('%Y-%m-%d') if last_reminder else None,
+                'cart_items': [
+                    {
+                        'product_id': i.product.id,
+                        'title': i.product.title,
+                        'price': float(i.price),
+                        'qty': i.qty,
+                        'sub_total': float(i.sub_total),
+                        'stock_qty': i.product.stock_qty,
+                        'image': str(i.product.image),
+                    }
+                    for i in cart_items
+                ],
+                'wishlist_items': [
+                    {
+                        'product_id': i.product.id,
+                        'title': i.product.title,
+                        'price': float(i.product.price),
+                        'stock_qty': i.product.stock_qty,
+                        'image': str(i.product.image),
+                    }
+                    for i in wishlist_items
+                ],
+            })
+
+        return Response(data)
+
+
+# ─── Admin : envoyer un rappel manuel ────────────────────────────────────────
+
+COOLDOWNS = {
+    'cart_abandon': 7,
+    'wishlist': 14,
+}
+
+class AdminSendReminderView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def post(self, request):
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+
+        user_id = request.data.get('user_id')
+        reminder_type = request.data.get('type')  # 'cart_abandon' | 'wishlist'
+
+        if reminder_type not in ('cart_abandon', 'wishlist'):
+            return Response({'error': 'type invalide'}, status=400)
+
+        try:
+            user = User.objects.get(id=user_id, is_staff=False)
+        except User.DoesNotExist:
+            return Response({'error': 'utilisateur introuvable'}, status=404)
+
+        cooldown_days = COOLDOWNS.get(reminder_type, 7)
+        cutoff = timezone.now() - datetime.timedelta(days=cooldown_days)
+        recent = ReminderLog.objects.filter(
+            user=user, reminder_type=reminder_type, sent_at__gte=cutoff
+        ).exists()
+        if recent:
+            return Response({'error': f'Rappel déjà envoyé il y a moins de {cooldown_days} jours'}, status=429)
+
+        site_url = 'https://lipsempirebyarielle.store'
+
+        if reminder_type == 'cart_abandon':
+            cart_items = list(Cart.objects.filter(user=user).select_related('product'))
+            if not cart_items:
+                return Response({'error': 'Panier vide'}, status=400)
+            total = sum(i.sub_total for i in cart_items)
+            html = render_to_string('email/cart_reminder.html', {
+                'user': user,
+                'cart_items': cart_items,
+                'cart_count': len(cart_items),
+                'total': float(total),
+                'site_url': site_url,
+            })
+            subject = "Vous avez oublié quelque chose 🛍️"
+
+        else:  # wishlist
+            wishlist_items = list(Wishlist.objects.filter(user=user).select_related('product'))
+            if not wishlist_items:
+                return Response({'error': 'Wishlist vide'}, status=400)
+            html = render_to_string('email/wishlist_reminder.html', {
+                'user': user,
+                'wishlist_items': wishlist_items,
+                'wishlist_count': len(wishlist_items),
+                'site_url': site_url,
+            })
+            subject = "Vos coups de cœur vous attendent 💕"
+
+        send_mail(
+            subject=subject,
+            message=subject,
+            html_message=html,
+            from_email=settings.EMAIL_HOST_USER,
+            recipient_list=[user.email],
+            fail_silently=False,
+        )
+        ReminderLog.objects.create(user=user, reminder_type=reminder_type)
+        return Response({'ok': True, 'sent_to': user.email})
+
+
+# ─── Merge cart anonyme → user après login ───────────────────────────────────
+
+class CartMergeView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        cart_id = request.data.get('cart_id')
+        if not cart_id:
+            return Response({'ok': True})
+        updated = Cart.objects.filter(cart_id=cart_id, user__isnull=True).update(user=request.user)
+        return Response({'ok': True, 'merged': updated})

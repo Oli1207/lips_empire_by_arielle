@@ -3,6 +3,8 @@ import { login } from '../utils/auth';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../store/auth';
 import Swal from 'sweetalert2';
+import apiInstance from '../utils/axios';
+import CartID from '../plugin/CartID';
 
 function Login() {
     const [email, setEmail] = useState("");
@@ -37,12 +39,18 @@ function Login() {
             });
             setIsLoading(false);
         } else {
+            // Merge le panier anonyme avec le compte connecté
+            const cart_id = CartID()
+            if (cart_id) {
+                apiInstance.post('cart/merge/', { cart_id }).catch(() => {})
+            }
+
             Swal.fire({
                 icon: 'success',
                 title: 'Login Successful',
                 text: 'You have successfully logged in!'
             });
-    
+
             navigate("/");
             resetForm();
             setIsLoading(false);
@@ -51,8 +59,7 @@ function Login() {
     
 
     return (
-        <div style={{ 
-            marginTop: '', 
+        <div style={{  
             display: 'flex', 
             flexDirection: 'column', 
             alignItems: 'center', 
@@ -63,7 +70,7 @@ function Login() {
             borderRadius: '10px',
             boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)'
         }}>
-            <h2 style={{ color: '#FF6F91', marginBottom: '20px' }}>Welcome Back</h2>
+            <h2 style={{ color: '#FEDBD1', marginBottom: '20px' }}>Bienvenue chez Lip's Empire By Arielle</h2>
             <form onSubmit={handleLogin} style={{ width: '100%', maxWidth: '400px' }}>
                 <input 
                     type='text'
@@ -78,7 +85,7 @@ function Login() {
                         marginBottom: '15px',
                         border: '1px solid #FF6F91',
                         borderRadius: '5px',
-                        backgroundColor: '#FFE6E9'
+                        backgroundColor: '#FEDBD1'
                     }}
                 />
                 <input 
@@ -94,7 +101,7 @@ function Login() {
                         marginBottom: '20px',
                         border: '1px solid #FF6F91',
                         borderRadius: '5px',
-                        backgroundColor: '#FFE6E9'
+                        backgroundColor: '#FEDBD1'
                     }}
                 />
                 <button 
@@ -102,16 +109,16 @@ function Login() {
                     style={{
                         width: '100%',
                         padding: '10px',
-                        backgroundColor: '#FF6F91',
+                        backgroundColor: '#FEDBD1',
                         border: 'none',
                         borderRadius: '5px',
-                        color: 'white',
+                        color: 'black',
                         fontSize: '16px',
                         cursor: 'pointer'
                     }}
                     disabled={isLoading}
                 >
-                    {isLoading ? 'Loading...' : 'Login'}
+                    {isLoading ? 'Chargement...' : 'Se Connecter'}
                 </button>
             </form>
         </div>

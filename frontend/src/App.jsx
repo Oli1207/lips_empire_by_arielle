@@ -36,6 +36,7 @@ import AdminProducts from './screens/admin/AdminProducts'
 import AdminCoupons from './screens/admin/AdminCoupons'
 import AdminReviews from './screens/admin/AdminReviews'
 import AdminAnalytics from './screens/admin/AdminAnalytics'
+import AdminUsers from './screens/admin/AdminUsers'
 
 // Enregistrement du Service Worker
 if ('serviceWorker' in navigator) {
@@ -99,6 +100,7 @@ function AppContent() {
                 <Route path="products" element={<AdminProducts />} />
                 <Route path="coupons" element={<AdminCoupons />} />
                 <Route path="reviews" element={<AdminReviews />} />
+                <Route path="users" element={<AdminUsers />} />
                 <Route path="analytics" element={<AdminAnalytics />} />
               </Routes>
             </AdminLayout>

@@ -64,4 +64,11 @@ urlpatterns = [
 
     # Push notifications
     path('push/subscribe/', views.PushSubscribeView.as_view()),
+
+    # Admin utilisateurs & rappels
+    path('admin/users/', views.AdminUserListView.as_view()),
+    path('admin/send-reminder/', views.AdminSendReminderView.as_view()),
+
+    # Cart merge (login)
+    path('cart/merge/', views.CartMergeView.as_view()),
 ]

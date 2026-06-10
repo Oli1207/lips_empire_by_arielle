@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr><td align="center" style="padding:30px 20px">
+    <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:12px;overflow:hidden">
+
+      <tr><td style="background:#fff0ed;padding:24px 32px;text-align:center;border-bottom:3px solid #fedbd1">
+        <h1 style="margin:0;font-size:20px;color:#c97b63">Plus que {{ product.stock_qty }} en stock ⚡</h1>
+      </td></tr>
+
+      <tr><td style="padding:28px 32px">
+        <p style="margin:0 0 16px;font-size:15px;color:#333">Bonjour {{ user.full_name|default:user.email }},</p>
+        <p style="margin:0 0 24px;font-size:14px;color:#555;line-height:1.6">
+          Un article que vous avez mis de côté est presque épuisé.
+          Il ne reste que <strong style="color:#c97b63">{{ product.stock_qty }} exemplaire{{ product.stock_qty|pluralize }}</strong> disponible{{ product.stock_qty|pluralize }}.
+        </p>
+
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:#fafafa;border-radius:8px;margin-bottom:28px">
+          <tr><td style="padding:20px">
+            <p style="margin:0 0 4px;font-size:16px;font-weight:bold;color:#1a1a1a">{{ product.title }}</p>
+            <p style="margin:0;font-size:15px;color:#c97b63;font-weight:bold">{{ product.price }} CAD</p>
+          </td></tr>
+        </table>
+
+        <div style="text-align:center;margin:0 0 28px">
+          <a href="{{ site_url }}/detail/{{ product.slug }}/" style="background:#c97b63;color:#fff;text-decoration:none;padding:14px 36px;border-radius:8px;font-size:15px;font-weight:bold;display:inline-block">
+            Commander avant épuisement →
+          </a>
+        </div>
+
+        <p style="margin:0;font-size:12px;color:#aaa;text-align:center;line-height:1.6">
+          Livraison rapide partout au Canada · Paiement 100% sécurisé<br>
+          <a href="{{ site_url }}" style="color:#c97b63;text-decoration:none">lipsempirebyarielle.store</a>
+        </p>
+      </td></tr>
+
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>
