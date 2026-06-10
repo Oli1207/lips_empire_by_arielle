@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr><td align="center" style="padding:30px 20px">
+    <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:12px;overflow:hidden">
+      <tr><td style="background:#fedbd1;padding:24px 32px;text-align:center">
+        <h1 style="margin:0;font-size:22px;color:#1a1a1a">🛍️ Nouvelle commande !</h1>
+      </td></tr>
+      <tr><td style="padding:32px">
+        <table width="100%" style="border-collapse:collapse">
+          <tr>
+            <td style="padding:8px 0;color:#666;font-size:14px">Commande #</td>
+            <td style="padding:8px 0;font-weight:bold;font-size:14px">{{ order.oid }}</td>
+          </tr>
+          <tr>
+            <td style="padding:8px 0;color:#666;font-size:14px">Client</td>
+            <td style="padding:8px 0;font-size:14px">{{ order.full_name }}</td>
+          </tr>
+          <tr>
+            <td style="padding:8px 0;color:#666;font-size:14px">Email</td>
+            <td style="padding:8px 0;font-size:14px">{{ order.email }}</td>
+          </tr>
+          <tr>
+            <td style="padding:8px 0;color:#666;font-size:14px">Téléphone</td>
+            <td style="padding:8px 0;font-size:14px">{{ order.mobile }}</td>
+          </tr>
+          <tr>
+            <td style="padding:8px 0;color:#666;font-size:14px">Adresse</td>
+            <td style="padding:8px 0;font-size:14px">{{ order.address }}, {{ order.city }}{% if order.state %}, {{ order.state }}{% endif %}, {{ order.country }} {{ order.postal_code }}</td>
+          </tr>
+        </table>
+        <hr style="border:none;border-top:1px solid #eee;margin:24px 0">
+        <h3 style="margin:0 0 16px;font-size:16px">Produits commandés</h3>
+        {% for item in order_items %}
+        <table width="100%" style="margin-bottom:8px">
+          <tr>
+            <td style="font-size:14px">{{ item.qty }}x {{ item.product.title }}</td>
+            <td align="right" style="font-size:14px;font-weight:bold">{{ item.total }} CAD</td>
+          </tr>
+        </table>
+        {% endfor %}
+        <hr style="border:none;border-top:1px solid #eee;margin:16px 0">
+        <table width="100%">
+          <tr>
+            <td style="font-size:14px;color:#666">Livraison</td>
+            <td align="right" style="font-size:14px">{{ order.shipping_amount }} CAD</td>
+          </tr>
+          <tr>
+            <td style="font-size:14px;color:#666">Frais Stripe</td>
+            <td align="right" style="font-size:14px">{{ order.service_fee }} CAD</td>
+          </tr>
+          <tr>
+            <td style="font-size:16px;font-weight:bold;padding-top:12px">TOTAL</td>
+            <td align="right" style="font-size:16px;font-weight:bold;color:#b85c3a;padding-top:12px">{{ order.total }} CAD</td>
+          </tr>
+        </table>
+        {% if lien_suivi %}
+        <div style="margin-top:24px;text-align:center">
+          <a href="{{ lien_suivi }}" style="background:#fedbd1;color:#1a1a1a;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:14px">Voir le suivi ChitChats</a>
+        </div>
+        {% endif %}
+      </td></tr>
+      <tr><td style="background:#f9f9f9;padding:16px 32px;text-align:center;font-size:12px;color:#999">
+        Lips Empire by Arielle — lipsempirebyarielle.store
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Routes, Route, BrowserRouter } from 'react-router-dom'
+import { Routes, Route, BrowserRouter, Navigate, useLocation } from 'react-router-dom'
 import Header from './components/Header'
 import Register from './components/Register'
 import Login from './components/Login'
@@ -23,51 +23,100 @@ import { CartContext } from './plugin/Context'
 import CartID from './plugin/CartID'
 import UserData from './plugin/UserData'
 import apiInstance from './utils/axios'
+import { initTracking, trackEvent } from './utils/tracking'
 
+// Admin
+import AdminRoute from './layout/AdminRoute'
+import AdminLayout from './layout/AdminLayout'
+import AdminDashboard from './screens/admin/AdminDashboard'
+import AdminOrders from './screens/admin/AdminOrders'
+import AdminProducts from './screens/admin/AdminProducts'
+import AdminCoupons from './screens/admin/AdminCoupons'
+import AdminReviews from './screens/admin/AdminReviews'
+import AdminAnalytics from './screens/admin/AdminAnalytics'
 
+// Enregistrement du Service Worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {})
+  })
+}
 
-function App() {
-  const [count, setCount] = useState(0)
+function TrackPageViews() {
+  const location = useLocation()
+  useEffect(() => {
+    trackEvent('page_view', { page: location.pathname })
+  }, [location.pathname])
+  return null
+}
+
+function AppContent() {
   const [cartCount, setCartCount] = useState()
-
   const cart_id = CartID()
   const userData = UserData()
-  
+
   useEffect(() => {
-    const url = userData ? `cart-list/${cart_id}/${userData?.user_id}/` : `cart-list/${cart_id}/`;
-    apiInstance.get(url).then((res) => {
-      setCartCount(res.data.length)
-    })
-    console.log(cartCount)
+    initTracking()
+  }, [])
+
+  useEffect(() => {
+    const url = userData ? `cart-list/${cart_id}/${userData?.user_id}/` : `cart-list/${cart_id}/`
+    apiInstance.get(url).then(res => setCartCount(res.data.length))
   })
+
+  const isAdminRoute = window.location.pathname.startsWith('/admin-panel')
+
   return (
     <CartContext.Provider value={[cartCount, setCartCount]}>
-    <BrowserRouter>
-    <MainWrapper>
-    <Header />
-   
-     
-     <Routes>
-        <Route path='/register' element={<Register/>}/>
-        <Route path='/login' element={< Login />}/>
-        <Route path='/logout' element={< Logout />}/>
-        <Route path="/" element={<HomeScreen />}/>
-        <Route path="/detail/:slug/" element={<ProductDetailScreen />}/>
-        <Route path="/cart" element={<CartScreen />}/>
-        <Route path="/checkout/:order_oid/" element={<CheckoutScreen />}/>
-        <Route path="/payment-success/:order_oid/" element={<PaymentSuccessScreen/>}/>
-        <Route path="/wishlist" element={<Wishlist/>}/>
-        <Route path="/policy" element={<PolicyScreen/>}/>
-        <Route path="/livraison" element={<LivraisonScreen/>}/>
-        <Route path="/search" element={<Search  />} />  {/* Affiche les résultats de recherche par texte */}
-       
+      <TrackPageViews />
+      {!isAdminRoute && <Header />}
+
+      <Routes>
+        {/* Routes publiques */}
+        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/logout" element={<Logout />} />
+        <Route path="/" element={<HomeScreen />} />
+        <Route path="*" element={<Navigate to="/" />} />
+        <Route path="/detail/:slug/" element={<ProductDetailScreen />} />
+        <Route path="/cart" element={<CartScreen />} />
+        <Route path="/checkout/:order_oid/" element={<CheckoutScreen />} />
+        <Route path="/payment-success/:order_oid/" element={<PaymentSuccessScreen />} />
+        <Route path="/wishlist" element={<Wishlist />} />
+        <Route path="/policy" element={<PolicyScreen />} />
+        <Route path="/livraison" element={<LivraisonScreen />} />
+        <Route path="/search" element={<Search />} />
+
+        {/* Routes Admin */}
+        <Route path="/admin-panel/*" element={
+          <AdminRoute>
+            <AdminLayout>
+              <Routes>
+                <Route index element={<AdminDashboard />} />
+                <Route path="orders" element={<AdminOrders />} />
+                <Route path="products" element={<AdminProducts />} />
+                <Route path="coupons" element={<AdminCoupons />} />
+                <Route path="reviews" element={<AdminReviews />} />
+                <Route path="analytics" element={<AdminAnalytics />} />
+              </Routes>
+            </AdminLayout>
+          </AdminRoute>
+        } />
       </Routes>
-     
-      <Footer />
-      </MainWrapper>
-    </BrowserRouter>
+
+      {!isAdminRoute && <Footer />}
     </CartContext.Provider>
   )
 }
 
-export default App;
+function App() {
+  return (
+    <BrowserRouter>
+      <MainWrapper>
+        <AppContent />
+      </MainWrapper>
+    </BrowserRouter>
+  )
+}
+
+export default App

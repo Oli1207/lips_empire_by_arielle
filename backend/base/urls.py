@@ -45,5 +45,23 @@ urlpatterns = [
     path('disconnect/', views.quickbooks_disconnect, name='qbo_disconnect'),  # révoque et supprime les tokens (optionnel)
 
 
-  #path('image-search/', store_views.ImageSearchAPIView.as_view(), name='image-search'),
-]  
+    # Admin
+    path('admin/dashboard/', views.AdminDashboardView.as_view()),
+    path('admin/orders/', views.AdminOrderListView.as_view()),
+    path('admin/orders/<str:oid>/', views.AdminOrderUpdateView.as_view()),
+    path('admin/products/', views.AdminProductListCreateView.as_view()),
+    path('admin/products/<int:pk>/', views.AdminProductDetailView.as_view()),
+    path('admin/coupons/', views.AdminCouponListCreateView.as_view()),
+    path('admin/coupons/<int:pk>/', views.AdminCouponDetailView.as_view()),
+    path('admin/reviews/', views.AdminReviewListView.as_view()),
+    path('admin/reviews/<int:pk>/', views.AdminReviewDetailView.as_view()),
+    path('admin/contacts/', views.AdminContactListView.as_view()),
+    path('admin/analytics/', views.AdminAnalyticsView.as_view()),
+
+    # Analytics tracking
+    path('analytics/session/', views.AnalyticsSessionView.as_view()),
+    path('analytics/event/', views.AnalyticsEventView.as_view()),
+
+    # Push notifications
+    path('push/subscribe/', views.PushSubscribeView.as_view()),
+]

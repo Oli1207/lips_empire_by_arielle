@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import apiInstance from '../utils/axios';
 import { useParams } from 'react-router-dom';
+import { trackEvent } from '../utils/tracking';
 
 function PaymentSuccessScreen() {
     const [order, setOrder] = useState({});
@@ -12,7 +13,7 @@ function PaymentSuccessScreen() {
 
     useEffect(() => {
         apiInstance.get(`checkout/${param.order_oid}/`).then((res) => {
-            console.log(res.data);
+            
             setOrder(res.data);
          
         });
@@ -29,6 +30,7 @@ function PaymentSuccessScreen() {
         .then((res) =>{
             if (res.data.message === 'Paiement effectué avec succès'){
                 setStatus("paiement effectué")
+                trackEvent('purchase', { value: order.total, extra: { order_id: order.oid } })
             }
             if (res.data.message === 'déjà payé'){
                 setStatus("déjà payé")
@@ -56,20 +58,20 @@ function PaymentSuccessScreen() {
                                         <div className="d-flex justify-content-center align-items-center">
                                            {status === "verifying" &&
                                              <div className="col-lg-12">
-                                             <div className="border border-3 border-warning" />
+                                             <div className="border border-3" />
                                              <div className="card bg-white shadow p-5">
                                                  <div className="mb-4 text-center">
                                                      <i
-                                                         className="fas fa-spinner fa-spin text-warning"
-                                                         style={{ fontSize: 100, color: "green" }}
+                                                         className="fas fa-spinner fa-spin"
+                                                         style={{ fontSize: 100, color:"#FF9B9B" }}
                                                      />
                                                  </div>
                                                  <div className="text-center">
-                                                     <h1>Vérification du paiement...</h1>
+                                                     <h1  style={{color:"#FF9B9B"}} >Vérification du paiement...</h1>
                                                      <p>
-                                                      <b className='text-success'>  veuillez patienter pendant que nous vérifions votre paiement</b>
+                                                      <b style={{color:"#FF9B9B"}} className=''>  veuillez patienter pendant que nous vérifions votre paiement</b>
                                                             <br />
-                                                            <b className='text-danger'>VEUILLEZ RESTER SUR LA PAGE SANS RECHARGER</b>
+                                                            <b  style={{color:"#FF9B9B"}} className=''>VEUILLEZ RESTER SUR LA PAGE SANS RECHARGER</b>
                                                      </p>
                                                     
                                                  </div>
@@ -89,7 +91,6 @@ function PaymentSuccessScreen() {
                                                      <div className="text-center">
                                                          <h1>Facture non payée <i className='fas fa-ban'></i></h1>
                                                          <p>
-                                                         
                                                                 <b className='text-danger'>S'il vous plait essayez de refaire le paiement</b>
                                                          </p>
                                                         
@@ -99,28 +100,29 @@ function PaymentSuccessScreen() {
                                             }
                                              {status === 'déjà payé' && 
                                              <div className="col-lg-12">
-                                             <div className="border border-3 border-success" />
+                                             <div className="border border-3" />
                                              <div className="card bg-white shadow p-5">
                                                  <div className="mb-4 text-center">
                                                      <i
-                                                         className="fas fa-check-circle text-success"
-                                                         style={{ fontSize: 100, color: "green" }}
+                                                         className="fas fa-check-circle"
+                                                         style={{ fontSize: 100, color: "#FF9B9B" }}
                                                      />
                                                  </div>
                                                  <div className="text-center">
-                                                     <h1>Paiement déjà effectué !</h1>
+                                                     <h1  style={{ color: "#FF9B9B" }} >Paiement déjà effectué !</h1>
                                                      <p>
-                                                         Your checkout was successful.
+                                                          Votre commande a été complété avec succès !
                                                          <hr />
                                                          <small>Gardez bien votre id de commande <b> {order.oid}</b> pour le suivi et d'éventuelles réclamations.
                                                          Un lien de suivi vous a été envoyé par email pour suivre l’acheminement de votre colis.</small>
                                                      </p>
                                                      <button
-                                                         className="btn btn-success mt-3"
+                                                         className="btn btn-secondary mt-3"
                                                          data-bs-toggle="modal"
                                                          data-bs-target="#exampleModal"
+                                                         
                                                      >
-                                                         View Order <i className="fas fa-eye" />{" "}
+                                                         Voir la commande <i className="fas fa-eye" />{" "}
                                                      </button>
                                                      {/* <a
                                                          href="/"
@@ -132,7 +134,7 @@ function PaymentSuccessScreen() {
                                                      <a href="/"
                                                          className="btn btn-secondary mt-3 ms-2"
                                                      >
-                                                         Go Home <i className="fas fa-arrow-left" />{" "}
+                                                          Aller à la page d'accueil <i className="fas fa-arrow-left" />{" "}
                                                      </a>
                                                  </div>
                                              </div>
@@ -140,27 +142,28 @@ function PaymentSuccessScreen() {
                                            }
                                            {status === 'paiement effectué' && 
                                              <div className="col-lg-12">
-                                             <div className="border border-3 border-success" />
+                                             <div className="border border-3" />
                                              <div className="card bg-white shadow p-5">
                                                  <div className="mb-4 text-center">
                                                      <i
-                                                         className="fas fa-check-circle text-success"
-                                                         style={{ fontSize: 100, color: "green" }}
+                                                         className="fas fa-check-circle"
+                                                         style={{ fontSize: 100, color: "#FF9B9B" }}
                                                      />
                                                  </div>
                                                  <div className="text-center">
-                                                     <h1>Thank You !</h1>
+                                                     <h1 style={{color:"#FF9B9B"}}>Merci !</h1>
                                                      <p>
-                                                         Your checkout was successful.
+                                                         Votre commande a été complété avec succès !
                                                          <hr />
                                                          <small>Gardez bien votre id de commande <b> {order.oid}</b> pour le suivi et d'éventuelles réclamations</small>
                                                      </p>
                                                      <button
-                                                         className="btn btn-success mt-3"
+                                                         className="btn mt-3"
                                                          data-bs-toggle="modal"
                                                          data-bs-target="#exampleModal"
+                                                         style={{backgroundColor:"#FF9B9B"}}
                                                      >
-                                                         View Order <i className="fas fa-eye" />{" "}
+                                                         Voir la commande <i className="fas fa-eye" />{" "}
                                                      </button>
                                                      {/* <a
                                                          href="/"
@@ -172,7 +175,7 @@ function PaymentSuccessScreen() {
                                                      <a href="/"
                                                          className="btn btn-secondary mt-3 ms-2"
                                                      >
-                                                         Go Home <i className="fas fa-arrow-left" />{" "}
+                                                         Aller à la page d'accueil <i className="fas fa-arrow-left" />{" "}
                                                      </a>
                                                  </div>
                                              </div>
@@ -214,7 +217,7 @@ function PaymentSuccessScreen() {
                             <h6 style={{color:'black'}}>{order.mobile}</h6>
                             <h6 style={{color:'black'}} className="mb-5">{order.address} - {order.city} <br />  {order.state} - {order.country} </h6>
                             <p className="mb-0" style={{ color: "#35558a" }}>
-                                Payment summary
+                                Résumé du paiement
                             </p>
                             <hr
                                 className="mt-2 mb-4"
@@ -228,33 +231,33 @@ function PaymentSuccessScreen() {
                             {order.orderitem?.map ((o, index) =>(
                                  <div className="d-flex justify-content-between shadow p-2 rounded-2 mb-2">
                                  <p style={{color:'black'}} className="fw-bold mb-0">{o.product?.title}</p>
-                                 <p style={{color:'black'}} className="text-muted mb-0">${o.price} * {o.qty} </p>
+                                 <p style={{color:'black'}} className="text-muted mb-0">{o.price} * {o.qty} CAD</p>
                              </div>
                             ))}
                             <div className="d-flex justify-content-between">
-                                <p style={{color:'black'}} className="fw-bold mb-0">Subtotal</p>
-                                <p style={{color:'black'}} className="text-muted mb-0">${order.sub_total}</p>
+                                <p style={{color:'black'}} className="fw-bold mb-0">Sous-total</p>
+                                <p style={{color:'black'}} className="text-muted mb-0">{order.sub_total} CAD</p>
                             </div>
                             <div className="d-flex justify-content-between">
-                                <p style={{color:'black'}} className="small mb-0">Shipping Fee</p>
-                                <p style={{color:'black'}} className="small mb-0">${order.shipping_amount}</p>
+                                <p style={{color:'black'}} className="small mb-0">Frais de livraison</p>
+                                <p style={{color:'black'}} className="small mb-0">{order.shipping_amount} CAD</p>
                             </div>
                             <div className="d-flex justify-content-between">
-                                <p style={{color:'black'}} className="small mb-0">Service Fee</p>
-                                <p style={{color:'black'}} className="small mb-0">${order.service_fee}</p>
+                                <p style={{color:'black'}} className="small mb-0">Frais de service</p>
+                                <p style={{color:'black'}} className="small mb-0">{order.service_fee} CAD</p>
                             </div>
                             <div className="d-flex justify-content-between">
-                                <p style={{color:'black'}} className="small mb-0">Tax</p>
-                                <p style={{color:'black'}} className="small mb-0">${order.tax_fee}</p>
+                                <p style={{color:'black'}} className="small mb-0">Taxe</p>
+                                <p style={{color:'black'}} className="small mb-0">{order.tax_fee} CAD</p>
                             </div>
                             <div className="d-flex justify-content-between">
-                                <p style={{color:'black'}} className="small mb-0">Discount</p>
-                                <p style={{color:'black'}} className="small mb-0">-${order.saved}</p>
+                                <p style={{color:'black'}} className="small mb-0">Réduction</p>
+                                <p style={{color:'black'}} className="small mb-0">-{order.saved} CAD</p>
                             </div>
                             <div className="d-flex justify-content-between mt-4">
                                 <p style={{color:'black'}} className="fw-bold">Total</p>
                                 <p className="fw-bold" style={{ color: "#35558a" }}>
-                                    ${order.total}
+                                    {order.total} CAD
                                 </p>
                             </div>
                         </div>

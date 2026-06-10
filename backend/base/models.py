@@ -300,6 +300,43 @@ def update_product_rating(sender, instance, **kwargs):
         
         
 
+class AnalyticsSession(models.Model):
+    session_id = models.CharField(max_length=100, unique=True)
+    utm_source = models.CharField(max_length=200, null=True, blank=True)
+    utm_medium = models.CharField(max_length=200, null=True, blank=True)
+    utm_campaign = models.CharField(max_length=200, null=True, blank=True)
+    device_type = models.CharField(max_length=50, null=True, blank=True)
+    country = models.CharField(max_length=10, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_seen = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.session_id
+
+
+class AnalyticsEvent(models.Model):
+    session = models.ForeignKey(AnalyticsSession, on_delete=models.CASCADE, related_name='events')
+    event_type = models.CharField(max_length=100)
+    page = models.CharField(max_length=500, null=True, blank=True)
+    product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, blank=True)
+    value = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    extra = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.event_type} - {self.created_at}"
+
+
+class PushSubscription(models.Model):
+    endpoint = models.TextField(unique=True)
+    p256dh = models.TextField()
+    auth = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.endpoint[:80]
+
+
 class QuickBooksCredentials(models.Model):
     """
     Stocke les tokens pour une entreprise QuickBooks connectée (realmId).

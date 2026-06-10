@@ -129,6 +129,14 @@ EMAIL_USE_LOCALTIME = True
 STRIPE_PUBLIC_KEY = env('STRIPE_PUBLIC_KEY')
 STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY')
 
+# Admin notifications
+ADMIN_EMAIL = env('ADMIN_EMAIL', default='contact@lipsempirebyarielle.store')
+
+# Push notifications VAPID
+VAPID_PUBLIC_KEY = env('VAPID_PUBLIC_KEY', default='')
+VAPID_PRIVATE_KEY = env('VAPID_PRIVATE_KEY', default='')
+VAPID_CLAIM_EMAIL = env('VAPID_CLAIM_EMAIL', default='mailto:contact@lipsempirebyarielle.store')
+
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=50),

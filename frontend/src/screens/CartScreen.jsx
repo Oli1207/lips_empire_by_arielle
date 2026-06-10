@@ -18,6 +18,7 @@ import GetCurrentAddress from "../plugin/UserCountry";
 import UserData from "../plugin/UserData";
 import CartID from "../plugin/CartID";
 import { CartContext } from "../plugin/Context";
+import { trackEvent } from "../utils/tracking";
 
 function CartScreen() {
   const [cart, setCart] = useState([]);
@@ -256,6 +257,7 @@ function CartScreen() {
         //     text: 'Your order has been successfully placed!'
         // });
 
+        trackEvent('begin_checkout', { value: cartTotal.total })
         navigate(`/checkout/${response.data.order_oid}`);
       } else {
         // gestion d'une réponse inattendue

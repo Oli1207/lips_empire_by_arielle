@@ -1,6 +1,7 @@
 import React, { useState,useContext, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import apiInstance from '../utils/axios';
+import { trackEvent } from '../utils/tracking';
 import GetCurrentAddress from '../plugin/UserCountry';
 import UserData from '../plugin/UserData';
 import { Row, Col, Image, ListGroup, Card, Button } from "react-bootstrap";
@@ -58,8 +59,9 @@ function ProductDetailScreen() {
                 setProduct(res.data);
                 setSpecifications(res.data.specification);
                 setGallery(res.data.gallery);
+                trackEvent('view_product', { product_id: res.data.id, value: res.data.price });
                 setCurrentImage(res.data.image); // Définit l'image de base comme image initiale
-                console.log(res.data);
+                
             });
     }, [param.slug]);
 
@@ -93,6 +95,7 @@ function ProductDetailScreen() {
     apiInstance.get(url).then((res) => {
       setCartCount(res.data.length)
     })
+            trackEvent('add_to_cart', { product_id: product.id, value: product.price });
             Toast.fire({
                 icon: 'success',
                 title: response.data.message,
@@ -110,7 +113,7 @@ function ProductDetailScreen() {
     const fetchReviewData = async() => {
         if (product?.id){
         await apiInstance.get(`reviews/${product?.id}/`).then((res) =>{
-            console.log(res.data)
+            
             setReviews(res.data)
         })
     }  }  
@@ -126,7 +129,7 @@ function ProductDetailScreen() {
             ...createReview,
             [event.target.name]:event.target.value
         })
-        console.log(createReview)
+    
     }
 
     const handleReviewSubmit = (e) => {
@@ -208,7 +211,7 @@ function ProductDetailScreen() {
           formData.append('user_id', userId);
     
           const response = await apiInstance.post(`customer/wishlist/${userId}/`, formData);
-          console.log(response.data);
+          
     
           Swal.fire({
             icon: 'success',

@@ -15,6 +15,7 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['email'] = user.email
         token['username'] = user.username
         token['phone'] = user.phone
+        token['admin'] = user.is_staff
         return token
     
 
@@ -211,6 +212,37 @@ class CouponSerializer(serializers.ModelSerializer):
 
         else:
             self.Meta.depth = 3
+
+
+class AdminProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = '__all__'
+
+
+class AdminReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = '__all__'
+        depth = 2
+
+
+class AdminContactSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Contact
+        fields = '__all__'
+
+
+class AnalyticsSessionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AnalyticsSession
+        fields = '__all__'
+
+
+class AnalyticsEventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AnalyticsEvent
+        fields = '__all__'
 
 
 class ContactSerializer(serializers.ModelSerializer):

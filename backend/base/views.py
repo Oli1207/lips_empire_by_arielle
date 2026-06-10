@@ -16,12 +16,15 @@ from django.views.decorators.cache import never_cache
 
 
 from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework import generics, status
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from django.db.models import Sum, Count
+import datetime
 import stripe
 from django.shortcuts import redirect, HttpResponse, get_object_or_404, render
 from django.http import JsonResponse
@@ -754,7 +757,25 @@ class PaymentSuccessView(generics.CreateAPIView):
                     html_message=render_to_string("email/customer_order_confirmation.html", context),
                     from_email=settings.EMAIL_HOST_USER,
                     recipient_list=[order.email],
-                    fail_silently=True  # ⚠️ ne bloque pas le frontend
+                    fail_silently=True
+                )
+
+                # Email de notification à Arielle
+                admin_email = getattr(settings, 'ADMIN_EMAIL', settings.EMAIL_HOST_USER)
+                items_summary = ", ".join([f"{i.qty}x {i.product.title}" for i in order_items])
+                send_mail(
+                    subject=f"🛍️ Nouvelle commande #{order.oid} — {order.total} CAD",
+                    message=f"Nouvelle commande\nClient: {order.full_name} ({order.email})\nProduits: {items_summary}\nTotal: {order.total} CAD\nPays: {order.country}",
+                    html_message=render_to_string("email/admin_new_order.html", context),
+                    from_email=settings.EMAIL_HOST_USER,
+                    recipient_list=[admin_email],
+                    fail_silently=True
+                )
+
+                # Push notification admin
+                _send_admin_push(
+                    title=f"Nouvelle commande ! 🛍️",
+                    body=f"{order.full_name} — {order.total} CAD ({order.country})",
                 )
 
                 # --- QuickBooks non bloquant ---
@@ -884,6 +905,336 @@ class SearchProductAPIView(generics.ListCreateAPIView):
         return products
         
 
-# integrations/views.py
+
+# ─────────────────────────────────────────────
+# HELPER : push notification vers tous les abonnés admin
+# ─────────────────────────────────────────────
+
+def _send_admin_push(title, body):
+    try:
+        from pywebpush import webpush, WebPushException
+        vapid_private = getattr(settings, 'VAPID_PRIVATE_KEY', '')
+        vapid_email = getattr(settings, 'VAPID_CLAIM_EMAIL', 'mailto:contact@lipsempirebyarielle.store')
+        if not vapid_private:
+            return
+        payload = json.dumps({"title": title, "body": body})
+        for sub in PushSubscription.objects.all():
+            try:
+                webpush(
+                    subscription_info={"endpoint": sub.endpoint, "keys": {"p256dh": sub.p256dh, "auth": sub.auth}},
+                    data=payload,
+                    vapid_private_key=vapid_private,
+                    vapid_claims={"sub": vapid_email},
+                )
+            except WebPushException:
+                sub.delete()
+    except ImportError:
+        pass
 
 
+# ─────────────────────────────────────────────
+# ADMIN — Dashboard
+# ─────────────────────────────────────────────
+
+@method_decorator(never_cache, name='dispatch')
+class AdminDashboardView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def get(self, request):
+        today = timezone.now().date()
+        month_start = today.replace(day=1)
+        thirty_days_ago = today - datetime.timedelta(days=29)
+
+        paid = CartOrder.objects.filter(payment_status='paid')
+        paid_today = paid.filter(date__date=today)
+        paid_month = paid.filter(date__date__gte=month_start)
+        pending = paid.filter(order_status='Pending')
+
+        revenue_today = paid_today.aggregate(r=Sum('total'))['r'] or 0
+        revenue_month = paid_month.aggregate(r=Sum('total'))['r'] or 0
+        revenue_total = paid.aggregate(r=Sum('total'))['r'] or 0
+
+        daily_revenue = []
+        for i in range(30):
+            d = thirty_days_ago + datetime.timedelta(days=i)
+            rev = paid.filter(date__date=d).aggregate(r=Sum('total'))['r'] or 0
+            daily_revenue.append({'date': str(d), 'revenue': float(rev)})
+
+        top_products = list(
+            CartOrderItem.objects.filter(order__payment_status='paid')
+            .values('product__title', 'product__id')
+            .annotate(total_sold=Sum('qty'), total_revenue=Sum('total'))
+            .order_by('-total_sold')[:5]
+        )
+
+        recent_orders = CartOrderSerializer(paid.order_by('-date')[:8], many=True).data
+
+        low_stock = list(Product.objects.filter(stock_qty__lte=5, stock_qty__gt=0).values('id', 'title', 'stock_qty'))
+        out_of_stock = Product.objects.filter(stock_qty=0).count()
+
+        return Response({
+            'revenue': {
+                'today': float(revenue_today),
+                'month': float(revenue_month),
+                'total': float(revenue_total),
+            },
+            'orders': {
+                'today': paid_today.count(),
+                'month': paid_month.count(),
+                'total': paid.count(),
+                'pending': pending.count(),
+            },
+            'stock': {'low_stock': low_stock, 'out_of_stock': out_of_stock},
+            'daily_revenue': daily_revenue,
+            'top_products': top_products,
+            'recent_orders': recent_orders,
+        })
+
+
+# ─────────────────────────────────────────────
+# ADMIN — Commandes
+# ─────────────────────────────────────────────
+
+@method_decorator(never_cache, name='dispatch')
+class AdminOrderListView(generics.ListAPIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    serializer_class = CartOrderSerializer
+
+    def get_queryset(self):
+        qs = CartOrder.objects.all().order_by('-date')
+        s = self.request.query_params.get('status')
+        p = self.request.query_params.get('payment')
+        c = self.request.query_params.get('country')
+        if s:
+            qs = qs.filter(order_status=s)
+        if p:
+            qs = qs.filter(payment_status=p)
+        if c:
+            qs = qs.filter(country__iexact=c)
+        return qs
+
+
+@method_decorator(never_cache, name='dispatch')
+class AdminOrderUpdateView(generics.UpdateAPIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    serializer_class = CartOrderSerializer
+    queryset = CartOrder.objects.all()
+    lookup_field = 'oid'
+
+
+# ─────────────────────────────────────────────
+# ADMIN — Produits
+# ─────────────────────────────────────────────
+
+@method_decorator(never_cache, name='dispatch')
+class AdminProductListCreateView(generics.ListCreateAPIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    serializer_class = AdminProductSerializer
+    queryset = Product.objects.all().order_by('-date')
+    parser_classes = [MultiPartParser, FormParser]
+
+
+@method_decorator(never_cache, name='dispatch')
+class AdminProductDetailView(generics.RetrieveUpdateDestroyAPIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    serializer_class = AdminProductSerializer
+    queryset = Product.objects.all()
+    parser_classes = [MultiPartParser, FormParser]
+
+
+# ─────────────────────────────────────────────
+# ADMIN — Coupons
+# ─────────────────────────────────────────────
+
+@method_decorator(never_cache, name='dispatch')
+class AdminCouponListCreateView(generics.ListCreateAPIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    serializer_class = CouponSerializer
+    queryset = Coupon.objects.all().order_by('-date')
+
+
+@method_decorator(never_cache, name='dispatch')
+class AdminCouponDetailView(generics.RetrieveUpdateDestroyAPIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    serializer_class = CouponSerializer
+    queryset = Coupon.objects.all()
+
+
+# ─────────────────────────────────────────────
+# ADMIN — Avis
+# ─────────────────────────────────────────────
+
+@method_decorator(never_cache, name='dispatch')
+class AdminReviewListView(generics.ListAPIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    serializer_class = AdminReviewSerializer
+
+    def get_queryset(self):
+        qs = Review.objects.all().order_by('-date')
+        active = self.request.query_params.get('active')
+        if active is not None:
+            qs = qs.filter(active=(active.lower() == 'true'))
+        return qs
+
+
+@method_decorator(never_cache, name='dispatch')
+class AdminReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    serializer_class = AdminReviewSerializer
+    queryset = Review.objects.all()
+
+
+# ─────────────────────────────────────────────
+# ADMIN — Contacts & Analytics
+# ─────────────────────────────────────────────
+
+@method_decorator(never_cache, name='dispatch')
+class AdminContactListView(generics.ListAPIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    serializer_class = AdminContactSerializer
+    queryset = Contact.objects.all().order_by('-id')
+
+
+@method_decorator(never_cache, name='dispatch')
+class AdminAnalyticsView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def get(self, request):
+        today = timezone.now().date()
+        thirty_days_ago = today - datetime.timedelta(days=29)
+        seven_days_ago = today - datetime.timedelta(days=6)
+
+        sessions_30d = AnalyticsSession.objects.filter(created_at__date__gte=thirty_days_ago)
+        sessions_7d = AnalyticsSession.objects.filter(created_at__date__gte=seven_days_ago)
+        events_30d = AnalyticsEvent.objects.filter(created_at__date__gte=thirty_days_ago)
+
+        events_by_type = list(
+            events_30d.values('event_type').annotate(count=Count('id')).order_by('-count')
+        )
+        top_pages = list(
+            events_30d.filter(event_type='page_view')
+            .values('page').annotate(count=Count('id')).order_by('-count')[:10]
+        )
+        top_products_viewed = list(
+            events_30d.filter(event_type='view_product', product__isnull=False)
+            .values('product__title', 'product__id').annotate(count=Count('id')).order_by('-count')[:5]
+        )
+
+        daily_sessions = []
+        for i in range(30):
+            d = thirty_days_ago + datetime.timedelta(days=i)
+            count = AnalyticsSession.objects.filter(created_at__date=d).count()
+            daily_sessions.append({'date': str(d), 'sessions': count})
+
+        total_sessions = sessions_30d.count()
+        purchases = events_30d.filter(event_type='purchase').count()
+        conversion_rate = round(purchases / total_sessions * 100, 2) if total_sessions > 0 else 0
+
+        devices = list(sessions_30d.values('device_type').annotate(count=Count('id')))
+        sources = list(
+            sessions_30d.exclude(utm_source=None).exclude(utm_source='')
+            .values('utm_source').annotate(count=Count('id')).order_by('-count')[:5]
+        )
+
+        return Response({
+            'sessions': {'7d': sessions_7d.count(), '30d': total_sessions},
+            'events_by_type': events_by_type,
+            'top_pages': top_pages,
+            'top_products_viewed': top_products_viewed,
+            'daily_sessions': daily_sessions,
+            'conversion_rate': conversion_rate,
+            'devices': devices,
+            'sources': sources,
+        })
+
+
+# ─────────────────────────────────────────────
+# ANALYTICS — Session & Events (public)
+# ─────────────────────────────────────────────
+
+class AnalyticsSessionView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        data = request.data
+        session_id = data.get('session_id')
+        if not session_id:
+            return Response({'error': 'session_id required'}, status=400)
+        AnalyticsSession.objects.update_or_create(
+            session_id=session_id,
+            defaults={
+                'utm_source': data.get('utm_source') or None,
+                'utm_medium': data.get('utm_medium') or None,
+                'utm_campaign': data.get('utm_campaign') or None,
+                'device_type': data.get('device_type') or None,
+                'country': data.get('country') or None,
+            }
+        )
+        return Response({'ok': True})
+
+
+class AnalyticsEventView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        data = request.data
+        session_id = data.get('session_id')
+        event_type = data.get('event_type')
+        if not session_id or not event_type:
+            return Response({'error': 'session_id and event_type required'}, status=400)
+
+        session, _ = AnalyticsSession.objects.get_or_create(session_id=session_id)
+
+        product = None
+        product_id = data.get('product_id')
+        if product_id:
+            product = Product.objects.filter(id=product_id).first()
+
+        value = data.get('value')
+
+        AnalyticsEvent.objects.create(
+            session=session,
+            event_type=event_type,
+            page=data.get('page', ''),
+            product=product,
+            value=Decimal(str(value)) if value else None,
+            extra=data.get('extra') or {},
+        )
+        return Response({'ok': True})
+
+
+# ─────────────────────────────────────────────
+# PUSH — Abonnements
+# ─────────────────────────────────────────────
+
+class PushSubscribeView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        data = request.data
+        endpoint = data.get('endpoint')
+        keys = data.get('keys', {})
+        if not endpoint:
+            return Response({'error': 'endpoint required'}, status=400)
+        PushSubscription.objects.update_or_create(
+            endpoint=endpoint,
+            defaults={'p256dh': keys.get('p256dh', ''), 'auth': keys.get('auth', '')}
+        )
+        return Response({'ok': True})
+
+    def delete(self, request):
+        endpoint = request.data.get('endpoint')
+        if endpoint:
+            PushSubscription.objects.filter(endpoint=endpoint).delete()
+        return Response({'ok': True})
