@@ -101,7 +101,7 @@ function AdminDashboard() {
       {/* Stock faible */}
       {data.stock.low_stock.length > 0 && (
         <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 12, padding: '16px 20px', marginBottom: 24 }}>
-          <p style={{ margin: '0 0 10px', fontWeight: 600, fontSize: 14, color: '#92400e' }}>⚠️ Stock faible</p>
+          <p style={{ margin: '0 0 10px', fontWeight: 600, fontSize: 14, color: '#92400e' }}>Stock faible</p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {data.stock.low_stock.map(p => (
               <span key={p.id} style={{ background: '#fef3c7', color: '#92400e', padding: '4px 10px', borderRadius: 20, fontSize: 12 }}>

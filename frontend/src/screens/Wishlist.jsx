@@ -16,7 +16,7 @@ function Wishlist() {
       const response = await axios.get(`customer/wishlist/${userData?.user_id}/`);
       setWishlist(response.data);
     } catch (error) {
-      console.log(error);
+    
     }
   };
 
@@ -26,7 +26,7 @@ function Wishlist() {
     }
   }, [userData?.user_id]);
 
-  console.log(wishlist);
+  
 
   // Fonction pour ajouter/supprimer un produit de la wishlist
   const handleAddToWishlist = async (product_id) => {
@@ -38,12 +38,12 @@ function Wishlist() {
         prevWishlist.filter((w) => w.product.id !== product_id)
       );
     } catch (error) {
-      console.log(error);
+      
     }
   };
 
   return (
-    <main style={{ marginTop: '350px' }}>
+    <main style={{ marginTop: '50px' }}>
       <div className="container">
         <section>
           <div className="row">
@@ -53,7 +53,7 @@ function Wishlist() {
                   <div className="container">
                     <section>
                       <div className="row">
-                        <h3 className="mb-3">
+                        <h3 style={{color:"black"}} className="mb-3">
                           <i className="fas fa-heart text-danger" /> Wishlist
                         </h3>
 
@@ -64,7 +64,8 @@ function Wishlist() {
                                 <div className="bg-image hover-zoom ripple" data-mdb-ripple-color="light">
                                   <Link to={`/detail/${w.product.slug}`}>
                                     <img
-                                      src={w.product?.image}
+                                  
+                                       src={w?.product?.image?.replace("backend.lipsempirebyarielle.store", "lipsempirebyarielle.store")}
                                       className="w-100"
                                       style={{ width: '100%', height: '250px', objectFit: 'cover' }}
                                       alt={w.product.title}
@@ -73,14 +74,14 @@ function Wishlist() {
                                 </div>
                                 <div className="card-body">
                                   <Link to={`/detail/${w.product.slug}`}>
-                                    <h5 className="card-title mb-3">{w.product.title}</h5>
+                                    <h5 style={{color:"black"}} className="card-title mb-3">{w.product.title}</h5>
                                   </Link>
-                                  <p className="text-reset">{w.product.category?.title}</p>
-                                  <div className="d-flex justify-content-center">
-                                    <h6 className="mb-3">{w.product.price}frs</h6>
-                                    <h6 className="mb-3 text-muted">
+                                  <p style={{color:"black"}} className="text-reset">{w.product.category?.title}</p>
+                                  <div className="d-flex">
+                                    <h6 style={{color:"black"}} className="mb-3">{w?.product?.price}{"  "}CAD</h6>
+                                    {/* <h6 className="mb-3 text-muted">
                                       <strike>{w.product.old_price}</strike>
-                                    </h6>
+                                    </h6> */}
                                   </div>
                                   <div className="btn-group">
                                     <button

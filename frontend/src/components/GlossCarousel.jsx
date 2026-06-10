@@ -15,11 +15,11 @@ const GlossCarousel = () => {
           alt="First slide"
           style={styles.image}
         />
-        <Carousel.Caption>
+        {/* <Carousel.Caption>
           <h3 style={{color:'black'}}>SUBLIMEZ VOS LÈVRES
    </h3>
           <p style={{color:'black'}}>Explorez notre sélection de gloss idéale pour toutes vos occasions</p>
-        </Carousel.Caption>
+        </Carousel.Caption> */}
       </Carousel.Item>
       {/* <Carousel.Item style={styles.carouselItem}>
         <img

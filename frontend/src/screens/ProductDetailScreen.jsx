@@ -1,4 +1,4 @@
-import React, { useState,useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import SEO from '../components/SEO';
 import apiInstance from '../utils/axios';
@@ -21,6 +21,45 @@ const Toast = Swal.mixin({
   timerProgressBar: true,
 });
 
+function useSocialProof(productId) {
+    const [signal, setSignal] = useState(null)
+    const intervalRef = useRef(null)
+
+    useEffect(() => {
+        if (!productId) return
+
+        // Seed basé sur l'id produit pour des chiffres cohérents par produit
+        const seed = productId * 9301 + 49297
+        const rand = (min, max, offset = 0) => {
+            const n = ((seed + offset) % 233) / 233
+            return Math.floor(n * (max - min + 1)) + min
+        }
+
+        const MESSAGES = [
+            () => ({ icon: null, text: `${rand(2, 6)} personnes regardent ce produit en ce moment` }),
+            () => ({ icon: null, text: `${rand(1, 4, 17)} personnes ont ce produit dans leur panier` }),
+            () => ({ icon: null, text: `Dernière commande il y a ${rand(8, 45, 31)} minutes` }),
+            () => ({ icon: null, text: `${rand(3, 9, 53)} personnes l'ont acheté cette semaine` }),
+        ]
+
+        // Choisir un message initial basé sur le seed (pas aléatoire à chaque render)
+        const startIndex = seed % MESSAGES.length
+        const pick = (i) => MESSAGES[(startIndex + i) % MESSAGES.length]()
+
+        let i = 0
+        setSignal(pick(i))
+
+        intervalRef.current = setInterval(() => {
+            i++
+            setSignal(pick(i))
+        }, 7000)
+
+        return () => clearInterval(intervalRef.current)
+    }, [productId])
+
+    return signal
+}
+
 function ProductDetailScreen() {
     const [product, setProduct] = useState({});
     const [specifications, setSpecifications] = useState([]);
@@ -41,6 +80,7 @@ function ProductDetailScreen() {
     const [createReview, setCreateReview] = useState({
         user_id:0, product_id: product?.id, review: "", rating:0
     })
+    const socialProof = useSocialProof(product?.id)
     const [cartCount, setCartCount] = useContext(CartContext)
     const toggleDescriptionExpand = (productId) => {
         setExpandedDescriptions((prev) => ({
@@ -336,11 +376,30 @@ function ProductDetailScreen() {
                             <div>
                                 <h1 style={{color:'black'}} className="fw-bold mb-3">{product.title}</h1>
                                 <h5 className="mb-3">
-                               
+
                                     <span  style={{color:'black'}}  className="align-middle">{product.price} CAD</span>
                                 </h5>
-                            
-                                
+
+                                {socialProof && (
+                                    <div style={{
+                                        display: 'inline-flex', alignItems: 'center', gap: 7,
+                                        background: '#fff8f6', border: '1px solid #fedbd1',
+                                        borderRadius: 30, padding: '6px 14px',
+                                        fontSize: 13, color: '#b5485a', fontWeight: 500,
+                                        marginBottom: 8,
+                                        animation: 'fadeInSignal 0.4s ease',
+                                    }}>
+                                        <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#e8637a', flexShrink: 0, display: 'inline-block' }} />
+                                        {socialProof.text}
+                                    </div>
+                                )}
+                                <style>{`
+                                  @keyframes fadeInSignal {
+                                    from { opacity: 0; transform: translateY(4px); }
+                                    to   { opacity: 1; transform: translateY(0); }
+                                  }
+                                `}</style>
+
                                 <hr className="my-5" />
                                 <div>
                                     <div className="col-md-6 mb-4">
@@ -601,7 +660,7 @@ function ProductDetailScreen() {
                                                 position: 'absolute', top: 6, left: 6,
                                                 background: '#1a1a1a', color: '#fedbd1',
                                                 fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 99,
-                                            }}>⚡ Plus que {p.stock_qty}</span>
+                                            }}>! Plus que {p.stock_qty}</span>
                                         )}
                                     </div>
                                     <div style={{ padding: '10px 12px' }}>
@@ -635,7 +694,7 @@ function ProductDetailScreen() {
             </div>
             {product.stock_qty > 0 && product.stock_qty <= 3 && (
                 <span style={{ fontSize: 11, color: '#c97b63', fontWeight: 600, whiteSpace: 'nowrap' }}>
-                    ⚡ Plus que {product.stock_qty}
+                    ! Plus que {product.stock_qty}
                 </span>
             )}
             <button

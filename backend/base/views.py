@@ -535,6 +535,18 @@ class CouponAPIView(generics.CreateAPIView):
             return Response({"message":"Coupon Does Not Exist", "icon":"error"}, status=status.HTTP_200_OK)
 
 
+class CouponValidateView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        code = request.data.get('code', '').strip()
+        if not code:
+            return Response({'valid': False, 'message': 'Code manquant'}, status=400)
+        coupon = Coupon.objects.filter(code__iexact=code, active=True).first()
+        if coupon:
+            return Response({'valid': True, 'code': coupon.code, 'discount': coupon.discount})
+        return Response({'valid': False, 'message': 'Code invalide ou expiré'})
+
 
 
 @method_decorator(never_cache, name='dispatch')
@@ -1148,6 +1160,18 @@ class AdminAnalyticsView(APIView):
             sessions_30d.exclude(utm_source=None).exclude(utm_source='')
             .values('utm_source').annotate(count=Count('id')).order_by('-count')[:5]
         )
+        top_campaigns = list(
+            sessions_30d.exclude(utm_campaign=None).exclude(utm_campaign='')
+            .values('utm_campaign').annotate(count=Count('id')).order_by('-count')[:5]
+        )
+        top_refs = list(
+            sessions_30d.exclude(ref=None).exclude(ref='')
+            .values('ref').annotate(count=Count('id')).order_by('-count')[:10]
+        )
+        top_content = list(
+            sessions_30d.exclude(utm_content=None).exclude(utm_content='')
+            .values('utm_content').annotate(count=Count('id')).order_by('-count')[:10]
+        )
 
         return Response({
             'sessions': {'7d': sessions_7d.count(), '30d': total_sessions},
@@ -1158,6 +1182,9 @@ class AdminAnalyticsView(APIView):
             'conversion_rate': conversion_rate,
             'devices': devices,
             'sources': sources,
+            'top_campaigns': top_campaigns,
+            'top_refs': top_refs,
+            'top_content': top_content,
         })
 
 
@@ -1179,6 +1206,8 @@ class AnalyticsSessionView(APIView):
                 'utm_source': data.get('utm_source') or None,
                 'utm_medium': data.get('utm_medium') or None,
                 'utm_campaign': data.get('utm_campaign') or None,
+                'utm_content': data.get('utm_content') or None,
+                'ref': data.get('ref') or None,
                 'device_type': data.get('device_type') or None,
                 'country': data.get('country') or None,
             }

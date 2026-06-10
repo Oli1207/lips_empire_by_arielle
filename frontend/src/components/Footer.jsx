@@ -4,6 +4,7 @@ import "./footer.css"; // On va adapter ce fichier aussi
 import logo from "./logo_arielle.png";
 import apiInstance from "../utils/axios";
 import Swal from "sweetalert2";
+import { SiTiktok, SiInstagram } from "react-icons/si";
 
 const Toast = Swal.mixin({
   toast: true,
@@ -100,7 +101,7 @@ const Footer = () => {
 
           {/* Bloc Menu */}
           <div className="col-lg-2 mb-4">
-            <h5 className="footer-title">Menu</h5>
+            <h5 style={{color:"black"}} className="footer-title">Menu</h5>
             <ul className="list-unstyled">
               <li>
                 <a href="/" className="footer-link">
@@ -108,13 +109,13 @@ const Footer = () => {
                 </a>
               </li>
               <li>
-                <a href="/about" className="footer-link">
+                <a href="/policy" className="footer-link">
                   Politique de l'entreprise
                 </a>
               </li>
               <li>
-                <a href="/products" className="footer-link">
-                  A propos
+                <a href="/cart" className="footer-link">
+                  Panier
                 </a>
               </li>
               {/* <li><a href="/gallery" className="footer-link">Galerie</a></li>
@@ -123,36 +124,38 @@ const Footer = () => {
           </div>
 
           {/* Bloc Liens utiles */}
-          <div className="col-lg-3 mb-4">
-            <h5 className="footer-title">Liens utiles</h5>
-            <ul className="list-unstyled">
-              <li>
-                <a href="#" className="footer-link">
-                  Conditions de Vente
-                </a>
-              </li>
-              <li>
-                <a href="#" className="footer-link">
-                  Cookies & Confidentialité
-                </a>
-              </li>
-              <li>
-                <a href="#" className="footer-link">
-                  Expéditions & Retours
-                </a>
-              </li>
-              <li>
-                <a href="#" className="footer-link">
-                  FAQ
-                </a>
-              </li>
-            </ul>
-          </div>
+       <div className="col-lg-3 mb-4">
+  <h5 className="footer-title" style={{ color: "black" }}>Réseaux sociaux</h5>
+  <ul className="list-unstyled" >
+    
+    <li className="mb-2">
+      <a
+        href="https://www.instagram.com/lipsempirebyarielle/"
+        className="footer-link"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+         <SiInstagram size={18} className="me-2" /> Instagram
+      </a>
+    </li>
+
+  
+    <li>
+  <a
+    href="#"
+    className="footer-link"
+    target="_blank"
+    rel="noopener noreferrer"
+  >
+    <SiTiktok size={18} className="me-2" /> TikTok
+  </a>
+</li>
+  </ul>
+</div>
 
           {/* Bloc Contact */}
           <div className="col-lg-3 mb-4">
-            <h5 className="footer-title">Nous contacter</h5>
-            <p className="footer-contact">LIP'S EMPIRE BY ARIELLE</p>
+            <h5 style={{color:"black"}} className="footer-title">Nous contacter</h5>
             <a
               href="mailto:contact@lipsempirebyarielle.store"
               className="footer-link"
@@ -163,9 +166,13 @@ const Footer = () => {
         </div>
 
         {/* Bouton de chat */}
-        {/* <div className="chat-button">
+        {/*
+
+        <div className="chat-button">
           <button className="btn btn-dark rounded-circle"><i className="fas fa-comment-dots"></i></button>
-        </div> */}
+        </div>
+        
+         */}
       </div>
     </footer>
   );

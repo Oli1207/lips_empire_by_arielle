@@ -163,12 +163,42 @@ function AdminAnalytics() {
               <span style={{ fontWeight: 600, color: DARK }}>{d.count}</span>
             </div>
           ))}
-          {data.sources.length > 0 && (
+          {data.sources?.length > 0 && (
             <>
               <p style={{ margin: '16px 0 10px', fontWeight: 600, fontSize: 13, color: DARK }}>Sources UTM</p>
               {data.sources.map(s => (
                 <div key={s.utm_source} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', fontSize: 12, color: '#666' }}>
                   <span>{s.utm_source}</span><span style={{ fontWeight: 600 }}>{s.count}</span>
+                </div>
+              ))}
+            </>
+          )}
+          {data.top_campaigns?.length > 0 && (
+            <>
+              <p style={{ margin: '16px 0 10px', fontWeight: 600, fontSize: 13, color: DARK }}>Campagnes</p>
+              {data.top_campaigns.map(c => (
+                <div key={c.utm_campaign} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', fontSize: 12, color: '#666' }}>
+                  <span>{c.utm_campaign}</span><span style={{ fontWeight: 600 }}>{c.count}</span>
+                </div>
+              ))}
+            </>
+          )}
+          {data.top_refs?.length > 0 && (
+            <>
+              <p style={{ margin: '16px 0 10px', fontWeight: 600, fontSize: 13, color: DARK }}>Influenceurs / ref</p>
+              {data.top_refs.map(r => (
+                <div key={r.ref} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', fontSize: 12, color: '#666' }}>
+                  <span>{r.ref}</span><span style={{ fontWeight: 600 }}>{r.count}</span>
+                </div>
+              ))}
+            </>
+          )}
+          {data.top_content?.length > 0 && (
+            <>
+              <p style={{ margin: '16px 0 10px', fontWeight: 600, fontSize: 13, color: DARK }}>Contenus (utm_content)</p>
+              {data.top_content.map(c => (
+                <div key={c.utm_content} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', fontSize: 12, color: '#666' }}>
+                  <span>{c.utm_content}</span><span style={{ fontWeight: 600 }}>{c.count}</span>
                 </div>
               ))}
             </>
@@ -181,7 +211,7 @@ function AdminAnalytics() {
         <p style={{ margin: '0 0 6px', fontWeight: 600, fontSize: 14, color: DARK }}>Notifications push</p>
         <p style={{ margin: '0 0 14px', fontSize: 13, color: '#888' }}>Recevez une notification sur ce navigateur à chaque nouvelle commande.</p>
         {pushStatus === 'subscribed'
-          ? <span style={{ background: '#d1fae5', color: '#065f46', padding: '8px 18px', borderRadius: 8, fontSize: 13, fontWeight: 500 }}>✓ Notifications activées</span>
+          ? <span style={{ background: '#d1fae5', color: '#065f46', padding: '8px 18px', borderRadius: 8, fontSize: 13, fontWeight: 500 }}>Notifications activées</span>
           : pushStatus === 'error'
           ? <span style={{ background: '#fee2e2', color: '#991b1b', padding: '8px 18px', borderRadius: 8, fontSize: 13 }}>Erreur — vérifiez la clé VAPID</span>
           : <button onClick={subscribePush} disabled={pushStatus === 'pending'} style={{ background: DARK, color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontSize: 13, cursor: 'pointer', fontWeight: 600 }}>

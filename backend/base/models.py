@@ -382,6 +382,8 @@ class AnalyticsSession(models.Model):
     utm_source = models.CharField(max_length=200, null=True, blank=True)
     utm_medium = models.CharField(max_length=200, null=True, blank=True)
     utm_campaign = models.CharField(max_length=200, null=True, blank=True)
+    utm_content = models.CharField(max_length=200, null=True, blank=True)
+    ref = models.CharField(max_length=200, null=True, blank=True)
     device_type = models.CharField(max_length=50, null=True, blank=True)
     country = models.CharField(max_length=10, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

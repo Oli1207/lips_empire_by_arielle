@@ -61,7 +61,7 @@ function Register() {
       borderRadius: '10px',
       boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)'
     }}>
-      <h2 style={{ color: '#FF6F91', marginBottom: '20px' }}>Créer un compte</h2>
+      <h2 style={{ color: '#FEDBD1', marginBottom: '20px' }}>Créer un compte</h2>
       <form onSubmit={handleSubmit} style={{ width: '100%', maxWidth: '400px' }}>
         <input 
           type='text'
@@ -74,7 +74,7 @@ function Register() {
             marginBottom: '15px',
             border: '1px solid #FF6F91',
             borderRadius: '5px',
-            backgroundColor: '#FFE6E9'
+            backgroundColor: '#FEDBD1'
           }}
         />
         <input 
@@ -88,7 +88,7 @@ function Register() {
             marginBottom: '15px',
             border: '1px solid #FF6F91',
             borderRadius: '5px',
-            backgroundColor: '#FFE6E9'
+            backgroundColor: '#FEDBD1'
           }}
         />
         <input 
@@ -102,7 +102,7 @@ function Register() {
             marginBottom: '15px',
             border: '1px solid #FF6F91',
             borderRadius: '5px',
-            backgroundColor: '#FFE6E9'
+            backgroundColor: '#FEDBD1'
           }}
         />
         <input 
@@ -116,7 +116,7 @@ function Register() {
             marginBottom: '15px',
             border: '1px solid #FF6F91',
             borderRadius: '5px',
-            backgroundColor: '#FFE6E9'
+            backgroundColor: '#FEDBD1'
           }}
         />
         <input 
@@ -130,7 +130,7 @@ function Register() {
             marginBottom: '20px',
             border: '1px solid #FF6F91',
             borderRadius: '5px',
-            backgroundColor: '#FFE6E9'
+            backgroundColor: '#FEDBD1'
           }}
         />
         <button 
@@ -138,10 +138,10 @@ function Register() {
           style={{
             width: '100%',
             padding: '10px',
-            backgroundColor: '#FF6F91',
+            backgroundColor: '#FEDBD1',
             border: 'none',
             borderRadius: '5px',
-            color: 'white',
+            color: 'black',
             fontSize: '16px',
             cursor: 'pointer'
           }}

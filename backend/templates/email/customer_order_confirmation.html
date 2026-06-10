@@ -170,7 +170,7 @@
                                                 line-height: 125%;
                                                 color: #e985a6;
                                               "
-                                              >Order Confirmation!</span
+                                              >Confirmation de la commande</span
                                             ></strong
                                           >
                                         </h1>
@@ -283,7 +283,7 @@
                                               "
                                             >
                                               <strong></strong
-                                              ><strong>Hey </strong>
+                                              ><strong>Bonjour </strong>
                                               <strong>
                                                 <span
                                                   style="
@@ -419,7 +419,7 @@
                                           été reçue et est maintenant en
                                           préparation avec amour et soin.
                                           <br />
-                                          Your order ID is
+                                          L'identifiant de ta commande est
                                           <span
                                             style="
                                               line-height: 150%;
@@ -460,11 +460,13 @@
                                             margin-bottom: 0;
                                           "
                                         >
-                                          Here’s the link to track your order
+                                          Utilise ce lien pour suivre ta
+                                          commande
                                           <span
                                             style="
                                               line-height: 150%;
                                               color: #ff9b9b;
+                                               text-decoration: none;
                                             "
                                             >{{lien_suivi}}</span
                                           >
@@ -626,7 +628,7 @@
                                               font-size: 16px;
                                             "
                                           >
-                                            Order Summary:
+                                            Résumé de la commande:
                                             <span
                                               style="
                                                 line-height: 150%;
@@ -776,7 +778,7 @@
                                                           margin: 0px;
                                                           font-size: 14px;
                                                         "
-                                                        >Product</span
+                                                        >Produit</span
                                                       ></strong
                                                     >
                                                   </h1>
@@ -813,7 +815,7 @@
                                                           margin: 0px;
                                                           font-size: 14px;
                                                         "
-                                                        >Qty</span
+                                                        >Qté</span
                                                       ></strong
                                                     >
                                                   </h1>
@@ -849,7 +851,7 @@
                                                           margin: 0px;
                                                           font-size: 14px;
                                                         "
-                                                        >Sub Total</span
+                                                        >Sous-Total</span
                                                       ></strong
                                                     >
                                                   </h1>
@@ -1088,7 +1090,7 @@
                                                       margin: 0px;
                                                     "
                                                   >
-                                                    <strong>Sub Total:</strong>
+                                                    <strong>Sous-Total:</strong>
                                                   </h1>
                                                 </th>
                                                 <th
@@ -1154,7 +1156,8 @@
                                                     "
                                                   >
                                                     <strong
-                                                      >Shipping Fee:</strong
+                                                      >Frais de
+                                                      livraison:</strong
                                                     >
                                                   </h1>
                                                 </th>
@@ -1221,7 +1224,7 @@
                                                       margin: 0px;
                                                     "
                                                   >
-                                                    <strong>Tax Fee:</strong>
+                                                    <strong>Taxe:</strong>
                                                   </h1>
                                                 </th>
                                                 <th
@@ -1287,7 +1290,7 @@
                                                     "
                                                   >
                                                     <strong
-                                                      >Service Fee:</strong
+                                                      >Frais de service:</strong
                                                     >
                                                   </h1>
                                                 </th>
@@ -1569,7 +1572,9 @@
                                               font-size: 18px;
                                               color: #ff9b9b;
                                             "
-                                            ><strong>Bio Data</strong></span
+                                            ><strong
+                                              >Informations Personnelles</strong
+                                            ></span
                                           >
                                           <br />
                                           <span
@@ -1577,7 +1582,7 @@
                                               line-height: 150%;
                                               color: #ff9b9b;
                                             "
-                                            >Full Name:
+                                            >Noms & Prénoms:
                                             {{order.full_name}}</span
                                           >
                                           <br />
@@ -1585,6 +1590,7 @@
                                             style="
                                               line-height: 150%;
                                               color: #ff9b9b;
+                                               text-decoration: none;
                                             "
                                             >Email: {{order.email}}</span
                                           >
@@ -1602,7 +1608,7 @@
                                               line-height: 150%;
                                               color: #ff9b9b;
                                             "
-                                            >Address: {{order.address}}</span
+                                            >Adresse: {{order.address}}</span
                                           >
                                           <br />
                                           <span
@@ -1610,7 +1616,7 @@
                                               line-height: 150%;
                                               color: #ff9b9b;
                                             "
-                                            >City: {{order.city}}</span
+                                            >Ville: {{order.city}}</span
                                           >
                                           <br />
                                           <span
@@ -1618,7 +1624,15 @@
                                               line-height: 150%;
                                               color: #ff9b9b;
                                             "
-                                            >State: {{order.state}}</span
+                                            >Code de province: {{order.state}}</span
+                                          >
+                                          <br />
+                                            <span
+                                            style="
+                                              line-height: 150%;
+                                              color: #ff9b9b;
+                                            "
+                                            >Code postal: {{order.postal_code}}</span
                                           >
                                           <br />
                                           <span
@@ -1626,7 +1640,7 @@
                                               line-height: 150%;
                                               color: #ff9b9b;
                                             "
-                                            >Country: {{order.country}}</span
+                                            >Code du pays: {{order.country}}</span
                                           >
                                         </p>
                                       </td>
@@ -1804,8 +1818,23 @@
                                             font-weight: 400;
                                           "
                                         >
-                                          Feel free to contact us if you have
-                                          any questions!
+                                          Besoin d'aide ? Notre équipe est là
+                                          pour toi ! Contacte-nous à tout moment
+                                          via cette adresse
+                                          <a
+                                            href="mailto:contact@lipsempirebyarielle.store"
+                                            style="
+                                              color: #333;
+                                              text-decoration: none;
+                                              margin-bottom: 0.5rem;
+                                            "
+                                          >
+                                            contact@lipsempirebyarielle.store
+                                          </a>
+                                          et nous te répondrons aussi vite que
+                                          possible. Merci de faire partie de
+                                          notre Empire, Queen. À très bientôt et
+                                          reste brillante !
                                         </p>
                                         <p
                                           style="
@@ -1817,7 +1846,7 @@
                                             font-weight: 400;
                                           "
                                         >
-                                          Sincerely,
+                                          Avec amour,
                                         </p>
                                         <p
                                           style="
@@ -1947,7 +1976,7 @@
                                 </p>
                               </td>
                             </tr>
-                            <tr>
+                            {% comment %} <tr>
                               <td
                                 height="20"
                                 class="m_1429413934428186810spacingHeight-20"
@@ -2114,7 +2143,7 @@
                                   </tbody>
                                 </table>
                               </td>
-                            </tr>
+                            </tr> {% endcomment %}
                             <tr>
                               <td
                                 height="30"

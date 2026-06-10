@@ -76,7 +76,7 @@ function CartSlideIn() {
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         }}>
           <span style={{ fontWeight: 700, fontSize: 14, color: '#1a1a1a' }}>
-            ✓ Ajouté au panier
+            Ajouté au panier
           </span>
           <button onClick={close} style={{
             background: 'none', border: 'none', fontSize: 18,

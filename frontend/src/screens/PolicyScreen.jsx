@@ -138,7 +138,7 @@ const PolicyScreen = ({ embedded = false }) => {
           Si vous préférez un remboursement plutôt qu’une réexpédition, le colis devra être retourné à Lip’s Empire by Arielle. Une fois le colis reçu, un remboursement sera effectué.
         </p>
         <p>
-          📌 Des frais d’emballage ou de traitement (3,17 $) pourront être déduits du remboursement si cette politique est mentionnée au moment de la commande.
+          Note : Des frais d’emballage ou de traitement (3,17 $) pourront être déduits du remboursement si cette politique est mentionnée au moment de la commande.
         </p>
       </section>
 

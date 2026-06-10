@@ -221,7 +221,7 @@ const handleSearchKey = (e) => {
                           padding: '4px 10px', borderRadius: 99,
                           letterSpacing: '0.03em',
                         }}>
-                          ⚡ Plus que {p.stock_qty}
+                          ! Plus que {p.stock_qty}
                         </span>
                       )}
                       {p.stock_qty === 0 && (

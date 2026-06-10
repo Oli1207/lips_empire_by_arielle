@@ -19,7 +19,7 @@
 //       if (provider === "quickbooks") {
 //         if (status === "success") {
 //           setConnected(true);
-//           window.alert("QuickBooks connecté ✅");
+//           window.alert("QuickBooks connecté");
 //         } else {
 //           window.alert("Erreur QuickBooks: " + (message || "unknown"));
 //         }

@@ -26,6 +26,8 @@ import CartID from './plugin/CartID'
 import UserData from './plugin/UserData'
 import apiInstance from './utils/axios'
 import { initTracking, trackEvent } from './utils/tracking'
+import { initPromo } from './utils/promo'
+import PromoBanner from './components/PromoBanner'
 
 // Admin
 import AdminRoute from './layout/AdminRoute'
@@ -70,6 +72,7 @@ function AppContent() {
 
   useEffect(() => {
     initTracking()
+    initPromo()
   }, [])
 
   useEffect(() => {
@@ -84,6 +87,7 @@ function AppContent() {
       <ScrollToTop />
       <TrackPageViews />
       {!isAdminRoute && <Header />}
+      {!isAdminRoute && <PromoBanner />}
       {!isAdminRoute && <CartSlideIn />}
 
       <Routes>

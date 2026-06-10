@@ -15,17 +15,24 @@ function getOrCreateSession() {
 function getUTMs() {
   try {
     const p = new URLSearchParams(window.location.search)
-    const src = p.get('utm_source')
-    const med = p.get('utm_medium')
-    const cam = p.get('utm_campaign')
-    if (src) sessionStorage.setItem('utm_source', src)
-    if (med) sessionStorage.setItem('utm_medium', med)
-    if (cam) sessionStorage.setItem('utm_campaign', cam)
+    const pairs = [
+      ['utm_source', 'utm_source'],
+      ['utm_medium', 'utm_medium'],
+      ['utm_campaign', 'utm_campaign'],
+      ['utm_content', 'utm_content'],
+      ['ref', 'ref'],
+    ]
+    pairs.forEach(([param, key]) => {
+      const val = p.get(param)
+      if (val) sessionStorage.setItem(key, val)
+    })
   } catch {}
   return {
     utm_source: sessionStorage.getItem('utm_source'),
     utm_medium: sessionStorage.getItem('utm_medium'),
     utm_campaign: sessionStorage.getItem('utm_campaign'),
+    utm_content: sessionStorage.getItem('utm_content'),
+    ref: sessionStorage.getItem('ref'),
   }
 }
 

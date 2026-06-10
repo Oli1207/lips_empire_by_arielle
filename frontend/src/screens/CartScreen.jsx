@@ -20,11 +20,16 @@ import CartID from "../plugin/CartID";
 import { CartContext } from "../plugin/Context";
 import { trackEvent } from "../utils/tracking";
 import SEO from "../components/SEO";
+import { getStoredPromo, applyPromoCode, clearPromo } from "../utils/promo";
 
 function CartScreen() {
   const [cart, setCart] = useState([]);
   const [cartTotal, setCartTotal] = useState([]);
   const [productQuantities, setProductQuantities] = useState({});
+  const [promoInput, setPromoInput] = useState('');
+  const [promoData, setPromoData] = useState(() => getStoredPromo());
+  const [promoError, setPromoError] = useState('');
+  const [promoLoading, setPromoLoading] = useState(false);
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -52,7 +57,7 @@ function CartScreen() {
         ? `cart-list/${cartId}/${userId}/`
         : `cart-list/${cartId}/`;
       const res = await axios.get(url);
-      setCart(res.data); // ✅ Met à jour le state après la requête
+      setCart(res.data);
       setCartCount(res.data.length); //
     } catch (error) {
       console.error("Error fetching cart:", error);
@@ -92,7 +97,7 @@ function CartScreen() {
     if (cart_id) {
       fetchCartData(cart_id, userData?.user_id ?? null);
     }
-  }, [cart_id]); // ✅ Ne se déclenche que si cart_id change
+  }, [cart_id]);
 
   useEffect(() => {
     const initialQuantities = {};
@@ -671,6 +676,50 @@ function CartScreen() {
                         <span>Sous-total</span>
                         <span>{cartTotal.sub_total?.toFixed(2)}CAD</span>
                       </div>
+                      {/* Code promo */}
+                      {promoData ? (
+                        <div style={{
+                          background: '#f0fdf4', border: '1px solid #86efac',
+                          borderRadius: 8, padding: '8px 12px', marginBottom: 12,
+                          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                          fontSize: 13,
+                        }}>
+                          <span><strong>{promoData.code}</strong> — {promoData.discount}% de réduction</span>
+                          <button onClick={() => { clearPromo(); setPromoData(null) }} style={{
+                            background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: 16,
+                          }}>×</button>
+                        </div>
+                      ) : (
+                        <form onSubmit={async (e) => {
+                          e.preventDefault()
+                          if (!promoInput.trim()) return
+                          setPromoLoading(true); setPromoError('')
+                          const result = await applyPromoCode(promoInput.trim())
+                          setPromoLoading(false)
+                          if (result) { setPromoData(result); setPromoInput('') }
+                          else setPromoError('Code invalide ou expiré')
+                        }} style={{ marginBottom: 12 }}>
+                          <div style={{ display: 'flex', gap: 6 }}>
+                            <input
+                              value={promoInput}
+                              onChange={e => setPromoInput(e.target.value)}
+                              placeholder="Code promo"
+                              style={{
+                                flex: 1, border: '1px solid #e5e7eb', borderRadius: 8,
+                                padding: '7px 10px', fontSize: 13,
+                              }}
+                            />
+                            <button type="submit" disabled={promoLoading} style={{
+                              background: '#1a1a1a', color: '#fedbd1',
+                              border: 'none', borderRadius: 8, padding: '7px 12px',
+                              fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                            }}>
+                              {promoLoading ? '…' : 'OK'}
+                            </button>
+                          </div>
+                          {promoError && <p style={{ color: '#dc2626', fontSize: 12, margin: '4px 0 0' }}>{promoError}</p>}
+                        </form>
+                      )}
                       {/* <div className="d-flex justify-content-between">
                                                 <span>Shipping </span>
                                                 <span>${cartTotal.shipping?.toFixed(2)}</span>
@@ -690,7 +739,7 @@ function CartScreen() {
                       </div>
                       {cart.length > 0 && (
                         <>
-                          {/* ✅ Encadré CGV juste au-dessus du bouton */}
+                          {/* Encadré CGV */}
                           <div
                             className="border rounded-4 p-3 mb-3"
                             style={{ background: "#fff" }}

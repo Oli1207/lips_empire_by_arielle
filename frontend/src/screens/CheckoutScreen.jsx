@@ -4,6 +4,7 @@ import SEO from "../components/SEO";
 import apiInstance from "../utils/axios";
 import Swal from "sweetalert2";
 import { SERVER_URL } from "../utils/constants";
+import { getStoredPromo } from "../utils/promo";
 
 const Toast = Swal.mixin({
   toast: true,
@@ -20,15 +21,25 @@ function Checkout() {
   const param = useParams();
   const axios = apiInstance;
 
-  const fetchOrderData = () => {
+  const fetchOrderData = (autoApply = false) => {
     axios.get(`checkout/${param?.order_oid}/`).then((res) => {
       setOrder(res.data);
-      
+      if (autoApply) {
+        const stored = getStoredPromo()
+        if (stored && res.data.saved === 0) {
+          const formdata = new FormData()
+          formdata.append('order_oid', res.data.oid)
+          formdata.append('coupon_code', stored.code)
+          axios.post('coupon/', formdata).then(() => fetchOrderData())
+        }
+      }
     });
   };
 
   useEffect(() => {
-    fetchOrderData();
+    const stored = getStoredPromo()
+    if (stored) setCouponCode(stored.code)
+    fetchOrderData(!!stored)
   }, []);
 
   const applyCoupon = async () => {
@@ -64,12 +75,12 @@ function Checkout() {
         <div className="container">
           <div style={{ display: 'flex', justifyContent: 'center', gap: 32, flexWrap: 'wrap' }}>
             {[
-              { icon: '🔒', text: 'Paiement 100% sécurisé', sub: 'via Stripe' },
-              { icon: '📦', text: 'Livraison suivie', sub: 'Canada & international' },
-              { icon: '↩️', text: 'Retours acceptés', sub: 'sous 14 jours' },
-            ].map(({ icon, text, sub }) => (
+              { text: 'Paiement 100% securise', sub: 'via Stripe' },
+              { text: 'Livraison suivie', sub: 'Canada & international' },
+              { text: 'Retours acceptes', sub: 'sous 14 jours' },
+            ].map(({ text, sub }) => (
               <div key={text} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 20 }}>{icon}</span>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#c44569', flexShrink: 0, display: 'inline-block' }} />
                 <div>
                   <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#1a1a1a' }}>{text}</p>
                   <p style={{ margin: 0, fontSize: 11, color: '#888' }}>{sub}</p>

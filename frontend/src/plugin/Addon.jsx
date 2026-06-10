@@ -18,7 +18,7 @@ function Addon() {
             setDataFunction(response.data);
         } catch (error) {
             // If an error occurs during the request, log the error to the console.
-            console.log(error);
+        
         }
     }
 

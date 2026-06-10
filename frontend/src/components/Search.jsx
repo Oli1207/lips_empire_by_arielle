@@ -93,7 +93,7 @@ const Search = () => {
   
 
   return (
-    <div style={{marginTop:"220px"}} className="container">
+    <div style={{marginTop:"50px"}} className="container">
       <h2 style={{color:"black"}} className="mb-4">Résultats de recherche pour : "{query}"</h2>
       <div className="row">
         {products.length > 0 ? (
@@ -143,14 +143,16 @@ const Search = () => {
                     )} */}
                  
                   <div className="d-flex justify-content-between align-items-center mt-3">
-                    <button
-                    style={{color:'black', backgroundColor:'#fedbd1'}}
-                      className="btn "
-
-                      onClick={() => handleAddToCart(p.id, p.price, p.shipping_amount)}
-                    >
-                      Ajouter au panier
-                    </button>
+                     <button
+                              type="button"
+                              style={{color: 'black', backgroundColor:'#fedbd1'}}
+                              className="btn  mb-2"
+                              onClick={() => handleAddToCart(p.id, p.price, p.shipping_amount)}
+                              disabled={p.stock_qty === 0}
+                            >
+                              <i className="fas fa-shopping-cart me-2" />
+                              {p.stock_qty === 0 ? "Rupture de stock" : "Ajouter au panier"}
+                            </button>
                     <button
                     style={{backgroundColor:"#fedbd1", color:"black"}}
                       className="btn"

@@ -78,7 +78,7 @@ function AccountScreen() {
 
         {!loading && orders.length === 0 && (
           <div style={{ textAlign: 'center', padding: 60, color: '#aaa' }}>
-            <p style={{ fontSize: 40, marginBottom: 12 }}>🛍️</p>
+            <p style={{ fontSize: 40, marginBottom: 12, color: '#e0c0bc' }}>—</p>
             <p style={{ fontSize: 16 }}>Aucune commande pour l'instant.</p>
             <Link to="/" style={{
               display: 'inline-block', marginTop: 16,
@@ -168,7 +168,7 @@ function AccountScreen() {
                         textDecoration: 'none', fontSize: 13, fontWeight: 700,
                       }}
                     >
-                      📦 Suivre mon colis
+                      Suivre mon colis
                     </a>
                   )}
                 </div>

@@ -16,7 +16,7 @@ export const addToWishlist = async (productId, userId) => {
         const response = await axios.post('customer/wishlist/create/', formData);
 
         // Log the response data from the server
-        console.log(response.data);
+        
 
         Swal.fire({
             icon: 'success',
@@ -27,7 +27,7 @@ export const addToWishlist = async (productId, userId) => {
         // isAddingToWishlist(true);
     } catch (error) {
         // Log any errors that occur during the request
-        console.log(error);
+        
 
         // Set the loading state to "An Error Occurred" in case of an error
         // isAddingToWishlist(false);

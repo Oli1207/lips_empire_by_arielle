@@ -14,7 +14,7 @@ const Toast = Swal.mixin({
 
 export const login = async (email, password) => {
     try {
-        const { data, status } = await axios.post('http://127.0.0.1:8000/api/v1/user/token/', {
+        const { data, status } = await axios.post('https://backend.lipsempirebyarielle.store/api/v1/user/token/', {
             email, password
         });
 
@@ -29,7 +29,7 @@ export const login = async (email, password) => {
 
         return { data, error: null };
     } catch (error) {
-        console.log(error);
+        
         return {
             data: null,
             error: error.response.data?.detail || 'Something went wrong'
@@ -39,7 +39,7 @@ export const login = async (email, password) => {
 
 export const register = async (full_name, email, phone, password, password2) => {
     try {
-        const { data } = await axios.post('http://127.0.0.1:8000/api/v1/user/register/', {
+        const { data } = await axios.post('https://backend.lipsempirebyarielle.store/api/v1/user/register/', {
             full_name,                     
             email,
             phone,
@@ -120,7 +120,7 @@ export const getRefreshToken = async () => {
     }
 
     try {
-        const response = await axios.post('http://127.0.0.1:8000/api/v1/user/token/refresh/', {
+        const response = await axios.post('https://backend.lipsempirebyarielle.store/api/v1/user/token/refresh/', {
             refresh: refresh_token,
         });
         return response.data; // Expected to return { access: 'new_access_token' }
@@ -136,7 +136,7 @@ export const isAccessTokenExpired = (accessToken) => {
         const decodedToken = jwtDecode(accessToken);
         return decodedToken.exp < Date.now() / 1000;
     } catch (error) {
-        console.log(error);
+        
         return true;
     }
 };

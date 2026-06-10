@@ -161,7 +161,7 @@ function AdminUsers() {
                             <p style={{ margin: 0, fontSize: 11, color: '#999' }}>{item.qty} × {item.price} CAD</p>
                           </div>
                           {item.stock_qty <= 3 && (
-                            <span style={{ background: '#fee2e2', color: '#991b1b', fontSize: 10, padding: '2px 6px', borderRadius: 99, whiteSpace: 'nowrap' }}>⚡ {item.stock_qty} restant{item.stock_qty > 1 ? 's' : ''}</span>
+                            <span style={{ background: '#fee2e2', color: '#991b1b', fontSize: 10, padding: '2px 6px', borderRadius: 99, whiteSpace: 'nowrap' }}>! {item.stock_qty} restant{item.stock_qty > 1 ? 's' : ''}</span>
                           )}
                         </div>
                       ))
@@ -189,7 +189,7 @@ function AdminUsers() {
                             <p style={{ margin: 0, fontSize: 11, color: '#999' }}>{item.price} CAD</p>
                           </div>
                           {item.stock_qty <= 3 && (
-                            <span style={{ background: '#fee2e2', color: '#991b1b', fontSize: 10, padding: '2px 6px', borderRadius: 99, whiteSpace: 'nowrap' }}>⚡ {item.stock_qty} restant{item.stock_qty > 1 ? 's' : ''}</span>
+                            <span style={{ background: '#fee2e2', color: '#991b1b', fontSize: 10, padding: '2px 6px', borderRadius: 99, whiteSpace: 'nowrap' }}>! {item.stock_qty} restant{item.stock_qty > 1 ? 's' : ''}</span>
                           )}
                         </div>
                       ))

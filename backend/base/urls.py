@@ -23,6 +23,7 @@ urlpatterns = [
     path('create-order/', views.CreateOrderAPIView.as_view()),
     path('checkout/<order_oid>/', views.CheckOutView.as_view()),
     path('coupon/', views.CouponAPIView.as_view()),
+    path('coupon/validate/', views.CouponValidateView.as_view()),
 
     path('stripe-checkout/<order_oid>/', views.StripeCheckoutView.as_view()),
     path('payment-success/<order_oid>/', views.PaymentSuccessView.as_view()),
