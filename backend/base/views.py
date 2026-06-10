@@ -373,19 +373,26 @@ class CreateOrderAPIView(generics.CreateAPIView):
             )
 
             response_data = response.json()
-            print("voici response data", response_data)
             shipment_data = response_data.get("shipment", {})
             rates = shipment_data.get("rates", [])
+
             if response.status_code == 201 and rates:
-    # Utilise le premier tarif dispo
                 chosen_rate = rates[0]
                 shipping_amount = Decimal(chosen_rate.get("payment_amount", "0.00"))
                 postage_type = chosen_rate.get("postage_type")
-                
                 shipment_id = shipment_data.get("id")
-            
 
-                # Créer la commande seulement si l'expédition réussit
+                # Calcul des totaux produits
+                for c in cart_items:
+                    total_sub_total += Decimal(c.sub_total)
+                    total_tax += Decimal(c.tax_fee)
+                    total_initial_total += Decimal(c.total)
+                    total_total += Decimal(c.total)
+
+                # Frais Stripe : 2.9% + 0.30 CAD sur (produits + livraison)
+                stripe_fee = (total_total + shipping_amount) * Decimal("0.029") + Decimal("0.30")
+                stripe_fee = stripe_fee.quantize(Decimal("0.01"))
+
                 order = CartOrder.objects.create(
                     user=user,
                     full_name=full_name,
@@ -399,6 +406,11 @@ class CreateOrderAPIView(generics.CreateAPIView):
                     shipping_amount=shipping_amount,
                     shipment_id=shipment_id,
                     terms_accepted=True,
+                    sub_total=total_sub_total,
+                    tax_fee=total_tax,
+                    service_fee=stripe_fee,
+                    initial_total=total_initial_total,
+                    total=total_total + shipping_amount + stripe_fee,
                 )
 
                 for c in cart_items:
@@ -409,47 +421,52 @@ class CreateOrderAPIView(generics.CreateAPIView):
                         price=c.price,
                         sub_total=c.sub_total,
                         shipping_amount=shipping_amount,
-                        service_fee=0, # service_fee=c.service_fee,
+                        service_fee=0,
                         tax_fee=c.tax_fee,
                         initial_total=c.total,
                         total=c.total,
-                        
                     )
+                    c.product.stock_qty -= c.qty
+                    c.product.save()
 
-                    # Mise à jour des totaux
-                    total_shipping += Decimal(shipping_amount)
-                    total_tax += Decimal(c.tax_fee)
-                    total_service_fee += 0
-                    total_sub_total += Decimal(c.sub_total)
-                    total_initial_total += Decimal(c.total)
-                    total_total += Decimal(c.total)
+                cart_items.delete()
 
-                order.sub_total = total_sub_total
-                order.tax_fee = total_tax
-                order.service_fee = total_service_fee
-                order.initial_total=total_initial_total
-                order.total = total_total + shipping_amount  # Inclure les frais de livraison
-                order.save()
-                c.product.stock_qty = c.product.stock_qty - c.qty
-                c.product.save()
-                for c in cart_items:
-                    cart_items.delete()
                 return Response({
                     "Message": "Order Created Successfully",
                     "order_oid": order.oid,
-                    "shipment": response_data
                 }, status=status.HTTP_201_CREATED)
 
-            else:
+            elif response.status_code == 201 and not rates:
                 return Response({
-                    "Message": "Shipment request failed, order not created",
-                    "error": response_data
+                    "error": "delivery_not_available",
+                    "message": "On ne livre pas encore dans votre zone, c'est pour bientôt !"
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            else:
+                errors = response_data.get("errors", [])
+                country_errors = ["country_code", "destination", "international"]
+                is_zone_error = any(
+                    any(k in str(e).lower() for k in country_errors)
+                    for e in errors
+                ) if errors else False
+
+                if is_zone_error or response.status_code in (422, 400):
+                    return Response({
+                        "error": "delivery_not_available",
+                        "message": "On ne livre pas encore dans votre zone, c'est pour bientôt !"
+                    }, status=status.HTTP_400_BAD_REQUEST)
+
+                return Response({
+                    "error": "shipment_failed",
+                    "message": "Erreur lors de la création de l'expédition.",
+                    "detail": response_data
                 }, status=status.HTTP_400_BAD_REQUEST)
 
         except requests.exceptions.RequestException as e:
             return Response({
-                "Message": "Shipment request failed, order not created",
-                "error": str(e)
+                "error": "shipment_failed",
+                "message": "Impossible de contacter le service de livraison.",
+                "detail": str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
