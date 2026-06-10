@@ -14,6 +14,7 @@ DEBUG = False
 
 ALLOWED_HOSTS = [
     "backend.lipsempirebyarielle.store",
+    "www.backend.lipsempirebyarielle.store",
     "www.lipsempirebyarielle.store",
     "lipsempirebyarielle.store",
     "127.0.0.1",
