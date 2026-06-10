@@ -1,5 +1,6 @@
 import React, { useState,useContext, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import SEO from '../components/SEO';
 import apiInstance from '../utils/axios';
 import { trackEvent } from '../utils/tracking';
 import GetCurrentAddress from '../plugin/UserCountry';
@@ -236,6 +237,22 @@ function ProductDetailScreen() {
    
     return (
         <main style={{marginTop: "22px", marginBottom: "50px"}}>
+            <SEO
+                title={product.title}
+                description={product.description}
+                image={product.image}
+                url={`/detail/${param.slug}/`}
+                type="product"
+                product={{
+                    title: product.title,
+                    description: product.description,
+                    image: product.image,
+                    price: product.price,
+                    stock_qty: product.stock_qty,
+                    rating: product.average_rating,
+                    reviews: reviews.length,
+                }}
+            />
             <div className="container">
                 <section className="mb-9">
                     <div className="row gx-lg-5">

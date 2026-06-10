@@ -19,6 +19,7 @@ import UserData from "../plugin/UserData";
 import CartID from "../plugin/CartID";
 import { CartContext } from "../plugin/Context";
 import { trackEvent } from "../utils/tracking";
+import SEO from "../components/SEO";
 
 function CartScreen() {
   const [cart, setCart] = useState([]);
@@ -313,6 +314,7 @@ function CartScreen() {
 
   return (
     <div style={{ marginTop: "100px" }}>
+      <SEO title="Mon panier" url="/cart" noindex={true} />
       <main className="mt-5">
         <div className="container">
           {/*Main layout*/}

@@ -1,9 +1,22 @@
 import React from 'react';
+import SEO from '../components/SEO';
 import './policyscreen.css';
 
-const PolicyScreen = () => {
+const PolicyScreen = ({ embedded = false }) => {
   return (
-    <div style={{ marginTop: "40px", padding: '20px', fontFamily: 'Arial, sans-serif', lineHeight: '1.6' }}>
+    <div style={{
+        marginTop: embedded ? 0 : "40px",
+        padding: embedded ? 0 : "20px",
+        fontFamily: 'Arial, sans-serif',
+        lineHeight: '1.6'
+      }}>
+      {!embedded && (
+        <SEO
+          title="Politique de confidentialité & CGV"
+          description="Consultez les conditions générales de vente, la politique de confidentialité et les informations légales de Lips Empire by Arielle."
+          url="/policy"
+        />
+      )}
       <h1 className="custom-title">Politique de l'entreprise </h1>
 
       <section>

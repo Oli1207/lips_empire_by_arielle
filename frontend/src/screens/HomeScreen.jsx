@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react'
+import SEO from '../components/SEO'
 import GlossCarousel from '../components/GlossCarousel'
 import apiInstance from '../utils/axios';
 import GetCurrentAddress from '../plugin/UserCountry';
@@ -159,6 +160,11 @@ const handleSearchKey = (e) => {
 
   return (
     <div>
+      <SEO
+        title="Gloss & Cosmétiques livrés au Canada"
+        description="Découvrez Lips Empire by Arielle : gloss hydratants, brillants à lèvres vegans et cosmétiques tendance. Livraison rapide partout au Canada et à l'international."
+        url="/"
+      />
       <GlossCarousel />
 
       <section className="container mt-4">

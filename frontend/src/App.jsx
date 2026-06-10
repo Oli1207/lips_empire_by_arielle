@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Routes, Route, BrowserRouter, Navigate, useLocation } from 'react-router-dom'
+import { HelmetProvider, Helmet } from 'react-helmet-async'
+import { SITE } from './utils/seo'
 import Header from './components/Header'
 import Register from './components/Register'
 import Login from './components/Login'
@@ -109,13 +111,46 @@ function AppContent() {
   )
 }
 
+const orgSchema = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: SITE.name,
+  url: SITE.url,
+  logo: `${SITE.url}/logo_arielle_img.jpg`,
+  sameAs: [],
+  contactPoint: {
+    '@type': 'ContactPoint',
+    contactType: 'customer support',
+    email: 'contact@lipsempirebyarielle.store',
+    availableLanguage: ['French', 'English'],
+  },
+})
+
+const websiteSchema = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: SITE.name,
+  url: SITE.url,
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: `${SITE.url}/search?q={search_term_string}`,
+    'query-input': 'required name=search_term_string',
+  },
+})
+
 function App() {
   return (
-    <BrowserRouter>
-      <MainWrapper>
-        <AppContent />
-      </MainWrapper>
-    </BrowserRouter>
+    <HelmetProvider>
+      <Helmet>
+        <script type="application/ld+json">{orgSchema}</script>
+        <script type="application/ld+json">{websiteSchema}</script>
+      </Helmet>
+      <BrowserRouter>
+        <MainWrapper>
+          <AppContent />
+        </MainWrapper>
+      </BrowserRouter>
+    </HelmetProvider>
   )
 }
 

@@ -5,6 +5,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.core.mail import send_mail
 from django.db import transaction
+from django.http import HttpResponse
+from django.utils import timezone
 
 
 from .models import *
@@ -1238,3 +1240,39 @@ class PushSubscribeView(APIView):
         if endpoint:
             PushSubscription.objects.filter(endpoint=endpoint).delete()
         return Response({'ok': True})
+
+
+def sitemap_xml(request):
+    site = 'https://lipsempirebyarielle.store'
+    now = timezone.now().strftime('%Y-%m-%d')
+
+    static_urls = [
+        ('/', '1.0', 'daily'),
+        ('/policy', '0.5', 'monthly'),
+        ('/livraison', '0.5', 'monthly'),
+    ]
+
+    products = Product.objects.exclude(status='en_attente').values('slug', 'date')
+
+    lines = ['<?xml version="1.0" encoding="UTF-8"?>',
+             '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
+
+    for loc, priority, changefreq in static_urls:
+        lines.append(f'''  <url>
+    <loc>{site}{loc}</loc>
+    <lastmod>{now}</lastmod>
+    <changefreq>{changefreq}</changefreq>
+    <priority>{priority}</priority>
+  </url>''')
+
+    for p in products:
+        lastmod = p['date'].strftime('%Y-%m-%d') if p.get('date') else now
+        lines.append(f'''  <url>
+    <loc>{site}/detail/{p['slug']}/</loc>
+    <lastmod>{lastmod}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>''')
+
+    lines.append('</urlset>')
+    return HttpResponse('\n'.join(lines), content_type='application/xml')

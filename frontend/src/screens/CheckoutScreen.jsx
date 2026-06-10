@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import SEO from "../components/SEO";
 import apiInstance from "../utils/axios";
 import Swal from "sweetalert2";
 import { SERVER_URL } from "../utils/constants";
@@ -55,6 +56,7 @@ function Checkout() {
 
   return (
     <main style={{ marginTop: "90px" }}>
+      <SEO title="Paiement sécurisé" url="/checkout" noindex={true} />
       <div className="container">
         <section>
           <div className="row gx-lg-5">

@@ -19,6 +19,7 @@ from django.urls import path, include, re_path
 from django.conf import settings
 from django.views.generic import TemplateView
 from django.conf.urls.static import static
+from base.views import sitemap_xml
 
 #from rest_framework import permissions
 #from drf_yasg.views import get_schema_view
@@ -41,6 +42,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/', include('base.urls')),
+    path('sitemap.xml', sitemap_xml),
 
     #re_path(r'^.*$', TemplateView.as_view(template_name='index.html')),
     #Documentation

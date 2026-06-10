@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+Disallow: /cart
+Disallow: /checkout/
+Disallow: /payment-success/
+Disallow: /admin-panel/
+Disallow: /login
+Disallow: /register
+Disallow: /logout
+
+Sitemap: https://lipsempirebyarielle.store/sitemap.xml

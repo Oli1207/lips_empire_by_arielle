@@ -98,7 +98,13 @@ class ProductSerializer(serializers.ModelSerializer):
     gallery = GallerySerializer(many=True, read_only=True)
     specification = SpecificationSerializer(many=True, read_only=True)
     category = CategorySerializer(read_only=True)
-    
+    average_rating = serializers.SerializerMethodField()
+
+    def get_average_rating(self, obj):
+        reviews = obj.review_set.all()
+        if not reviews:
+            return None
+        return round(sum(r.rating for r in reviews) / len(reviews), 1)
 
     class Meta:
         model = Product
@@ -119,7 +125,8 @@ class ProductSerializer(serializers.ModelSerializer):
                    'specification',
                    'pid',
                    'slug',
-                   'date']
+                   'date',
+                   'average_rating']
 
         def __init__(self, *args, **kwargs):
             super(ProductSerializer, self).__init__(*args, **kwargs)
