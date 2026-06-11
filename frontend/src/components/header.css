@@ -160,17 +160,16 @@
   /* Styling for the navigation items as buttons */
   .navbar .nav-link {
     display: block;
-    margin: 0 15px; /* Espacement augmenté */
-    padding: 12px 25px; /* Espacement augmenté */
+    margin: 0 4px;
+    padding: 8px 12px;
     border: none;
-    /* background: transparent; */
-    color: black; /* Couleur du texte plus sombre pour le contraste */
-    font-size: 18px; /* Taille du texte augmentée */
-    font-weight: 600; /* Poids du texte augmenté */
+    color: black;
+    font-size: 13px;
+    font-weight: 600;
     text-decoration: none;
     transition: background-color 0.3s, color 0.3s, transform 0.3s;
-    border-radius: 8px; /* Coins arrondis pour les boutons */
-    /* text-shadow: 2px 2px black; */
+    border-radius: 8px;
+    white-space: nowrap;
   }
 
   /* Styling for hover state */

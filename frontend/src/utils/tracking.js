@@ -133,6 +133,16 @@ export async function initTracking() {
   const { browser, os } = parseBrowserOS()
   const fingerprint = await getFingerprint()
 
+  // Lire le cache géo (rempli par UserCountry.jsx)
+  let geoData = {}
+  try {
+    const raw = localStorage.getItem('le_geo')
+    if (raw) {
+      const { data } = JSON.parse(raw)
+      if (data) geoData = { country: data.country || null, city: data.city || null, region: data.region || null }
+    }
+  } catch {}
+
   fetch(API + 'analytics/session/', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -149,6 +159,7 @@ export async function initTracking() {
       os,
       fingerprint,
       referrer: document.referrer || null,
+      ...geoData,
       ...utms,
     }),
     keepalive: true,

@@ -24,6 +24,7 @@ function GetCurrentAddress() {
                 const result = {
                     country_code: data.country_code,
                     country: data.country_name,
+                    region: data.region,
                     city: data.city,
                 }
                 try {

@@ -2,6 +2,17 @@ import React, { useEffect, useState, useRef } from 'react'
 import adminAxios from '../../utils/adminAxios'
 import Swal from 'sweetalert2'
 import { Plus, Edit2, Trash2, X } from 'lucide-react'
+import ReactQuill from 'react-quill'
+import 'react-quill/dist/quill.snow.css'
+
+const QUILL_MODULES = {
+  toolbar: [
+    ['bold', 'italic', 'underline'],
+    [{ list: 'ordered' }, { list: 'bullet' }],
+    [{ size: ['small', false, 'large'] }],
+    ['clean'],
+  ],
+}
 
 const BRAND = '#fedbd1'
 const DARK = '#1a1a1a'
@@ -141,13 +152,19 @@ function AdminProducts() {
             </div>
 
             <div style={{ marginBottom: 14 }}>
-              <label style={{ fontSize: 12, color: '#888', display: 'block', marginBottom: 4 }}>Description</label>
-              <textarea
-                value={form.description}
-                onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                rows={3}
-                style={{ width: '100%', padding: '9px 12px', border: '1px solid #e5e7eb', borderRadius: 8, fontSize: 13, resize: 'vertical', outline: 'none' }}
-              />
+              <label style={{ fontSize: 12, color: '#888', display: 'block', marginBottom: 4 }}>
+                Description
+                <span style={{ marginLeft: 6, color: '#bbb', fontWeight: 400 }}>— gras, italique, listes disponibles</span>
+              </label>
+              <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, overflow: 'hidden' }}>
+                <ReactQuill
+                  theme="snow"
+                  value={form.description}
+                  onChange={val => setForm(f => ({ ...f, description: val }))}
+                  modules={QUILL_MODULES}
+                  style={{ fontSize: 13 }}
+                />
+              </div>
             </div>
 
             <div style={{ marginBottom: 20 }}>

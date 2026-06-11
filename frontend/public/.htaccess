@@ -1,0 +1,15 @@
+<IfModule mod_mime.c>
+  AddType application/javascript .js .mjs
+  AddType text/css .css
+</IfModule>
+
+Options -MultiViews
+RewriteEngine On
+
+# Ne pas réécrire les fichiers et dossiers existants (assets, images, etc.)
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Toutes les autres URLs → index.html (SPA routing)
+RewriteRule ^ index.html [QL]

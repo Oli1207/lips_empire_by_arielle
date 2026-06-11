@@ -1213,6 +1213,18 @@ class AdminAnalyticsView(APIView):
             events_30d.filter(event_type='product_hover', product__isnull=False)
             .values('product__title').annotate(count=Count('id')).order_by('-count')[:5]
         )
+        top_countries = list(
+            sessions_30d.exclude(country=None).exclude(country='')
+            .values('country').annotate(count=Count('id')).order_by('-count')[:10]
+        )
+        top_cities = list(
+            sessions_30d.exclude(city=None).exclude(city='')
+            .values('city').annotate(count=Count('id')).order_by('-count')[:10]
+        )
+        top_regions = list(
+            sessions_30d.exclude(region=None).exclude(region='')
+            .values('region').annotate(count=Count('id')).order_by('-count')[:10]
+        )
 
         return Response({
             'sessions': {'7d': sessions_7d.count(), '30d': total_sessions},
@@ -1234,6 +1246,9 @@ class AdminAnalyticsView(APIView):
             'avg_time_on_page': avg_time_on_page,
             'avg_scroll_depth': avg_scroll,
             'top_hovered': top_hovered,
+            'top_countries': top_countries,
+            'top_cities': top_cities,
+            'top_regions': top_regions,
         })
 
 
@@ -1259,6 +1274,8 @@ class AnalyticsSessionView(APIView):
                 'ref': data.get('ref') or None,
                 'device_type': data.get('device_type') or None,
                 'country': data.get('country') or None,
+                'city': data.get('city') or None,
+                'region': data.get('region') or None,
                 'referrer': data.get('referrer') or None,
                 'is_new_visitor': data.get('is_new_visitor'),
                 'screen_res': data.get('screen_res') or None,

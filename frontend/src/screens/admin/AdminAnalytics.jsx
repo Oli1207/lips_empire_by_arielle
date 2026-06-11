@@ -210,6 +210,48 @@ function AdminAnalytics() {
         </div>
       </div>
 
+      {/* Géographie */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 18, marginBottom: 18 }}>
+        <div style={{ background: '#fff', borderRadius: 12, padding: '20px 22px', border: '1px solid #eee' }}>
+          <p style={{ margin: '0 0 14px', fontWeight: 600, fontSize: 14, color: DARK }}>Pays</p>
+          {data.top_countries?.length > 0
+            ? data.top_countries.map(c => (
+              <div key={c.country} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #f9f9f9', fontSize: 13 }}>
+                <span style={{ color: '#555' }}>{c.country}</span>
+                <span style={{ fontWeight: 600, color: DARK }}>{c.count}</span>
+              </div>
+            ))
+            : <p style={{ color: '#ccc', fontSize: 12 }}>Aucune donnée — les visiteurs doivent naviguer une fois de plus pour que la géo soit capturée</p>
+          }
+        </div>
+
+        <div style={{ background: '#fff', borderRadius: 12, padding: '20px 22px', border: '1px solid #eee' }}>
+          <p style={{ margin: '0 0 14px', fontWeight: 600, fontSize: 14, color: DARK }}>Régions / Provinces</p>
+          {data.top_regions?.length > 0
+            ? data.top_regions.map(r => (
+              <div key={r.region} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #f9f9f9', fontSize: 13 }}>
+                <span style={{ color: '#555' }}>{r.region}</span>
+                <span style={{ fontWeight: 600, color: DARK }}>{r.count}</span>
+              </div>
+            ))
+            : <p style={{ color: '#ccc', fontSize: 12 }}>Aucune donnée</p>
+          }
+        </div>
+
+        <div style={{ background: '#fff', borderRadius: 12, padding: '20px 22px', border: '1px solid #eee' }}>
+          <p style={{ margin: '0 0 14px', fontWeight: 600, fontSize: 14, color: DARK }}>Villes</p>
+          {data.top_cities?.length > 0
+            ? data.top_cities.map(c => (
+              <div key={c.city} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #f9f9f9', fontSize: 13 }}>
+                <span style={{ color: '#555' }}>{c.city}</span>
+                <span style={{ fontWeight: 600, color: DARK }}>{c.count}</span>
+              </div>
+            ))
+            : <p style={{ color: '#ccc', fontSize: 12 }}>Aucune donnée</p>
+          }
+        </div>
+      </div>
+
       {/* Comportement & provenance */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 18, marginBottom: 18 }}>
 

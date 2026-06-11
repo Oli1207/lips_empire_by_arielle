@@ -566,16 +566,16 @@ function ProductDetailScreen() {
 
                         {/* Formulaire */}
                         <h3 style={{ fontWeight: 700, fontSize: 18, color: '#1a1a1a', marginBottom: 6 }}>
-                            Donner votre avis
+                            Donnez votre avis
                         </h3>
-                        <p style={{ fontSize: 13, color: '#aaa', marginBottom: 20 }}>
+                        {/* <p style={{ fontSize: 13, color: '#aaa', marginBottom: 20 }}>
                             Votre avis sera visible apres validation par notre equipe.
-                        </p>
+                        </p> */}
 
                         {reviewSubmitted ? (
                             <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 12, padding: '20px 24px' }}>
                                 <p style={{ margin: 0, color: '#065f46', fontWeight: 600, fontSize: 15 }}>
-                                    Merci ! Votre avis a ete envoye et sera publie apres validation.
+                                    Merci ! Votre avis a été envoyé et sera publié sous peu.
                                 </p>
                             </div>
                         ) : (
