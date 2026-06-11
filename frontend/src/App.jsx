@@ -72,6 +72,7 @@ function AppContent() {
   const [cartCount, setCartCount] = useState()
   const cart_id = CartID()
   const userData = UserData()
+  const { pathname } = useLocation()
 
   useEffect(() => {
     initTracking()
@@ -83,7 +84,7 @@ function AppContent() {
     apiInstance.get(url).then(res => setCartCount(res.data.length))
   }, [cart_id, userData?.user_id])
 
-  const isAdminRoute = window.location.pathname.startsWith('/admin-panel')
+  const isAdminRoute = pathname.startsWith('/admin-panel')
 
   return (
     <CartContext.Provider value={[cartCount, setCartCount]}>

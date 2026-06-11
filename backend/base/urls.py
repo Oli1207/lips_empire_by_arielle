@@ -33,8 +33,6 @@ urlpatterns = [
     path('customer/orders/<user_id>/', views.OrdersAPIView.as_view()),
     
     path('customer/order/<user_id>/<order_oid>/', views.OrderDetailAPIView.as_view()),
-    path('reviews/<product_id>/', views.ReviewListAPIView.as_view()),
-    
     path('customer/wishlist/<user_id>/', views.WishListAPIView.as_view()),
     
     
@@ -73,10 +71,11 @@ urlpatterns = [
     # Cart merge (login)
     path('cart/merge/', views.CartMergeView.as_view()),
 
-    # Reviews
+    # Reviews — routes spécifiques avant le catch-all <product_id>
     path('reviews/token-info/', views.ReviewTokenInfoView.as_view()),
     path('reviews/submit/', views.PublicReviewSubmitView.as_view()),
     path('reviews/featured/', views.FeaturedReviewsView.as_view()),
+    path('reviews/<product_id>/', views.ReviewListAPIView.as_view()),
     path('feedback/submit/', views.PrivateFeedbackView.as_view()),
 
     # Admin reviews & feedbacks

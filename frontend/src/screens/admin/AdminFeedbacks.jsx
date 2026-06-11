@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useAuthStore } from '../../store/auth'
-import apiInstance from '../../utils/axios'
+import adminAxios from '../../utils/adminAxios'
 
 function FeedbackRow({ fb, onMarkRead }) {
   const [open, setOpen] = useState(false)
@@ -86,21 +85,18 @@ export default function AdminFeedbacks() {
   const [feedbacks, setFeedbacks] = useState([])
   const [showUnread, setShowUnread] = useState(true)
   const [loading, setLoading] = useState(true)
-  const { allUserData } = useAuthStore()
 
   const load = () => {
     setLoading(true)
-    apiInstance.get('admin/feedbacks/', {
-      headers: { Authorization: `Bearer ${allUserData?.access}` }
-    }).then(r => setFeedbacks(r.data)).finally(() => setLoading(false))
+    adminAxios.get('admin/feedbacks/', {
+}).then(r => setFeedbacks(r.data)).finally(() => setLoading(false))
   }
 
   useEffect(() => { load() }, [])
 
   const markRead = async (pk) => {
-    await apiInstance.patch(`admin/feedbacks/${pk}/`, { is_read: true }, {
-      headers: { Authorization: `Bearer ${allUserData?.access}` }
-    })
+    await adminAxios.patch(`admin/feedbacks/${pk}/`, { is_read: true }, {
+})
     load()
   }
 

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useAuthStore } from '../../store/auth'
-import apiInstance from '../../utils/axios'
+import adminAxios from '../../utils/adminAxios'
 
 const BACKEND = import.meta.env.VITE_REACT_APP_API_URL?.replace('/api/v1/', '') || ''
 
@@ -180,14 +179,12 @@ export default function AdminReviews() {
   const [reviews, setReviews] = useState([])
   const [filter, setFilter] = useState('pending')
   const [loading, setLoading] = useState(true)
-  const { allUserData } = useAuthStore()
 
   const load = (status) => {
     setLoading(true)
     const q = status !== 'all' ? `?status=${status}` : ''
-    apiInstance.get(`admin/reviews-manage/${q}`, {
-      headers: { Authorization: `Bearer ${allUserData?.access}` }
-    }).then(r => {
+    adminAxios.get(`admin/reviews-manage/${q}`, {
+}).then(r => {
       setReviews(r.data)
     }).finally(() => setLoading(false))
   }
@@ -195,9 +192,8 @@ export default function AdminReviews() {
   useEffect(() => { load(filter) }, [filter])
 
   const handleAction = async (pk, action) => {
-    await apiInstance.patch(`admin/reviews-manage/${pk}/`, { action }, {
-      headers: { Authorization: `Bearer ${allUserData?.access}` }
-    })
+    await adminAxios.patch(`admin/reviews-manage/${pk}/`, { action }, {
+})
     load(filter)
   }
 
