@@ -90,7 +90,8 @@ function ReviewCard({ product, token, orderOid, name, email, onDone }) {
     e.preventDefault()
     if (!rating) { alert('Veuillez choisir une note.'); return }
     if (!text.trim()) { alert('Veuillez ecrire un commentaire.'); return }
-    setLoading(true)
+    setDone(true)
+    onDone()
     const fd = new FormData()
     fd.append('reviewer_name', name)
     fd.append('reviewer_email', email)
@@ -100,10 +101,10 @@ function ReviewCard({ product, token, orderOid, name, email, onDone }) {
     fd.append('product_id', product.id)
     if (token) { fd.append('token', token); fd.append('order_oid', orderOid) }
     photos.forEach(p => fd.append('photos', p))
-    await apiInstance.post('reviews/submit/', fd)
-    setLoading(false)
-    setDone(true)
-    onDone()
+    apiInstance.post('reviews/submit/', fd).catch(() => {
+      setDone(false)
+      alert("Erreur lors de l'envoi. Reessayez.")
+    })
   }
 
   if (done) return (
@@ -175,7 +176,7 @@ function GlobalReviewForm({ token, orderOid, name: defaultName, email: defaultEm
     if (!rating || !text.trim() || !name.trim() || !email.trim()) {
       alert('Tous les champs marques * sont requis.'); return
     }
-    setLoading(true)
+    setDone(true)
     const fd = new FormData()
     fd.append('reviewer_name', name)
     fd.append('reviewer_email', email)
@@ -184,9 +185,10 @@ function GlobalReviewForm({ token, orderOid, name: defaultName, email: defaultEm
     fd.append('is_global', 'true')
     if (token) { fd.append('token', token); fd.append('order_oid', orderOid) }
     photos.forEach(p => fd.append('photos', p))
-    await apiInstance.post('reviews/submit/', fd)
-    setLoading(false)
-    setDone(true)
+    apiInstance.post('reviews/submit/', fd).catch(() => {
+      setDone(false)
+      alert("Erreur lors de l'envoi. Reessayez.")
+    })
   }
 
   if (done) return (
@@ -422,7 +424,7 @@ function OpenProductReview({ name, email }) {
     if (!selected || !rating || !text.trim()) {
       alert('Choisissez un produit, une note et ecrivez un commentaire.'); return
     }
-    setLoading(true)
+    setDone(true)
     const fd = new FormData()
     fd.append('reviewer_name', name)
     fd.append('reviewer_email', email)
@@ -431,9 +433,10 @@ function OpenProductReview({ name, email }) {
     fd.append('is_global', 'false')
     fd.append('product_id', selected.id)
     photos.forEach(p => fd.append('photos', p))
-    await apiInstance.post('reviews/submit/', fd)
-    setLoading(false)
-    setDone(true)
+    apiInstance.post('reviews/submit/', fd).catch(() => {
+      setDone(false)
+      alert("Erreur lors de l'envoi. Reessayez.")
+    })
   }
 
   if (done) return (

@@ -5,7 +5,7 @@ import { setAuthUser, getRefreshToken, logout } from './auth'
 const adminAxios = axios.create({
   baseURL: 'https://backend.lipsempirebyarielle.store/api/v1/',
   timeout: 30000,
-  headers: { 'Content-Type': 'application/json' },
+  headers: { Accept: 'application/json' },
 })
 
 adminAxios.interceptors.request.use((config) => {

@@ -189,7 +189,7 @@ function ProductDetailScreen() {
     }
 
     const [reviewName, setReviewName] = useState(userData?.username || '')
-    const [reviewEmail, setReviewEmail] = useState('')
+    const [reviewEmail, setReviewEmail] = useState(userData?.email || '')
     const [reviewPhotos, setReviewPhotos] = useState([])
     const [reviewSubmitted, setReviewSubmitted] = useState(false)
     const [reviewLoading, setReviewLoading] = useState(false)
@@ -201,7 +201,8 @@ function ProductDetailScreen() {
         const name = userData?.username || reviewName
         const email = reviewEmail
         if (!name.trim()) { Swal.fire({ icon: 'warning', title: 'Prenom requis', confirmButtonColor: '#1a1a1a' }); return }
-        setReviewLoading(true)
+        // UI optimiste — succès immédiat, envoi en arrière-plan
+        setReviewSubmitted(true)
         const fd = new FormData()
         fd.append('reviewer_name', name)
         fd.append('reviewer_email', email)
@@ -211,13 +212,10 @@ function ProductDetailScreen() {
         fd.append('is_global', 'false')
         if (userData?.user_id) fd.append('user_id', userData.user_id)
         reviewPhotos.forEach(p => fd.append('photos', p))
-        try {
-            await apiInstance.post('reviews/submit/', fd)
-            setReviewSubmitted(true)
-        } catch {
+        apiInstance.post('reviews/submit/', fd).catch(() => {
+            setReviewSubmitted(false)
             Swal.fire({ icon: 'error', title: 'Erreur', text: "Une erreur s'est produite. Reessayez.", confirmButtonColor: '#1a1a1a' })
-        }
-        setReviewLoading(false)
+        })
     }
       
 

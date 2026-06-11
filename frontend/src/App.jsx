@@ -86,14 +86,15 @@ function AppContent() {
   }, [cart_id, userData?.user_id])
 
   const isAdminRoute = pathname.startsWith('/admin-panel')
+  const isHomePage = pathname === '/'
 
   return (
     <CartContext.Provider value={[cartCount, setCartCount]}>
       <ScrollToTop />
       <TrackPageViews />
-      {!isAdminRoute && <Header />}
-      {!isAdminRoute && <PromoBanner />}
-      {!isAdminRoute && <CartSlideIn />}
+      {!isAdminRoute && !isHomePage && <Header />}
+      {!isAdminRoute && !isHomePage && <PromoBanner />}
+      {!isAdminRoute && !isHomePage && <CartSlideIn />}
 
       <Routes>
         {/* Routes publiques */}
