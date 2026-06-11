@@ -212,7 +212,7 @@ function ProductDetailScreen() {
         if (userData?.user_id) fd.append('user_id', userData.user_id)
         reviewPhotos.forEach(p => fd.append('photos', p))
         try {
-            await apiInstance.post('reviews/submit/', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+            await apiInstance.post('reviews/submit/', fd)
             setReviewSubmitted(true)
         } catch {
             Swal.fire({ icon: 'error', title: 'Erreur', text: "Une erreur s'est produite. Reessayez.", confirmButtonColor: '#1a1a1a' })

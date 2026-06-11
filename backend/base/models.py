@@ -213,7 +213,8 @@ class CartOrder(models.Model):
     state = models.CharField(max_length=100, null=True, blank=True)
     country = models.CharField(max_length=100, null=True, blank=True)
     postal_code = models.CharField(max_length=100, null=True, blank=True)
-    shipment_id =  models.CharField(max_length=1000, null=True, blank=True)
+    shipment_id = models.CharField(max_length=1000, null=True, blank=True)
+    postage_type = models.CharField(max_length=200, null=True, blank=True)
     stripe_session_id = models.CharField(max_length=1000, null=True, blank=True)
     qbo_invoice_id = models.CharField(max_length=1000, null=True, blank=True)
     oid = ShortUUIDField(unique=True, length=10, alphabet="abcdefghijklmnopqrstuvwxyz")
@@ -341,8 +342,8 @@ class ReviewPhoto(models.Model):
 
 class PrivateFeedback(models.Model):
     order = models.ForeignKey(CartOrder, on_delete=models.SET_NULL, null=True, blank=True)
-    name = models.CharField(max_length=100)
-    email = models.EmailField()
+    name = models.CharField(max_length=100, blank=True, default='Anonyme')
+    email = models.EmailField(blank=True, default='')
     message = models.TextField()
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)

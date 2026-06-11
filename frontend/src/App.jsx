@@ -17,6 +17,7 @@ import MainWrapper from './layout/MainWrapper'
 import CartScreen from './screens/CartScreen'
 import CheckoutScreen from './screens/CheckoutScreen'
 import PaymentSuccessScreen from './screens/PaymentSuccessScreen'
+import PaymentFailedScreen from './screens/PaymentFailedScreen'
 import Wishlist from './screens/Wishlist'
 import LivraisonScreen from './screens/LivraisonScreen'
 import PolicyScreen from './screens/PolicyScreen'
@@ -105,6 +106,7 @@ function AppContent() {
         <Route path="/cart" element={<CartScreen />} />
         <Route path="/checkout/:order_oid/" element={<CheckoutScreen />} />
         <Route path="/payment-success/:order_oid/" element={<PaymentSuccessScreen />} />
+        <Route path="/payment-failed" element={<PaymentFailedScreen />} />
         <Route path="/wishlist" element={<Wishlist />} />
         <Route path="/policy" element={<PolicyScreen />} />
         <Route path="/livraison" element={<LivraisonScreen />} />

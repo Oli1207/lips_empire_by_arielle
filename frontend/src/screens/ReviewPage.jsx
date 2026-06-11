@@ -100,7 +100,7 @@ function ReviewCard({ product, token, orderOid, name, email, onDone }) {
     fd.append('product_id', product.id)
     if (token) { fd.append('token', token); fd.append('order_oid', orderOid) }
     photos.forEach(p => fd.append('photos', p))
-    await apiInstance.post('reviews/submit/', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+    await apiInstance.post('reviews/submit/', fd)
     setLoading(false)
     setDone(true)
     onDone()
@@ -184,7 +184,7 @@ function GlobalReviewForm({ token, orderOid, name: defaultName, email: defaultEm
     fd.append('is_global', 'true')
     if (token) { fd.append('token', token); fd.append('order_oid', orderOid) }
     photos.forEach(p => fd.append('photos', p))
-    await apiInstance.post('reviews/submit/', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+    await apiInstance.post('reviews/submit/', fd)
     setLoading(false)
     setDone(true)
   }
@@ -431,7 +431,7 @@ function OpenProductReview({ name, email }) {
     fd.append('is_global', 'false')
     fd.append('product_id', selected.id)
     photos.forEach(p => fd.append('photos', p))
-    await apiInstance.post('reviews/submit/', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+    await apiInstance.post('reviews/submit/', fd)
     setLoading(false)
     setDone(true)
   }

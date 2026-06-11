@@ -50,10 +50,10 @@ function AdminProducts() {
     Object.entries(form).forEach(([k, v]) => { if (v !== null && v !== '') fd.append(k, v) })
     try {
       if (modal === 'create') {
-        await adminAxios.post('admin/products/', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+        await adminAxios.post('admin/products/', fd)
         Swal.fire({ icon: 'success', title: 'Produit créé !', timer: 1500, showConfirmButton: false })
       } else {
-        await adminAxios.patch(`admin/products/${modal.id}/`, fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+        await adminAxios.patch(`admin/products/${modal.id}/`, fd)
         Swal.fire({ icon: 'success', title: 'Produit mis à jour !', timer: 1500, showConfirmButton: false })
       }
       setModal(null); load()

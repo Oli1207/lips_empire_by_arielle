@@ -395,7 +395,18 @@ class CreateOrderAPIView(generics.CreateAPIView):
                 chosen_rate = rates[0]
                 shipping_amount = Decimal(chosen_rate.get("payment_amount", "0.00"))
                 postage_type = chosen_rate.get("postage_type")
-                shipment_id = shipment_data.get("id")
+                temp_shipment_id = shipment_data.get("id")
+
+                # Supprimer le shipment temporaire — on le recréera après paiement
+                if temp_shipment_id:
+                    try:
+                        requests.delete(
+                            f"https://chitchats.com/api/v1/clients/{CLIENT_ID}/shipments/{temp_shipment_id}",
+                            headers=headers,
+                            timeout=5,
+                        )
+                    except Exception:
+                        pass
 
                 # Frais Stripe : 2.9% + 0.30 CAD sur (produits + livraison)
                 stripe_fee = (total_total + shipping_amount) * Decimal("0.029") + Decimal("0.30")
@@ -412,7 +423,7 @@ class CreateOrderAPIView(generics.CreateAPIView):
                     country=country,
                     postal_code=postal_code,
                     shipping_amount=shipping_amount,
-                    shipment_id=shipment_id,
+                    postage_type=postage_type,
                     terms_accepted=True,
                     sub_total=total_sub_total,
                     tax_fee=total_tax,
@@ -625,7 +636,74 @@ class StripeCheckoutView(APIView):
             return Response({"error": f'something went wrong: {str(e)}'})
 
 
+def _create_chitchats_shipment(order):
+    """Crée un shipment définitif chez ChitChats pour une commande payée. Retourne le shipment_id ou None."""
+    import logging
+    log = logging.getLogger(__name__)
 
+    headers = {
+        "Authorization": CHITCHATS_API_KEY,
+        "Content-Type": "application/json; charset=utf-8",
+    }
+    base_url = f"https://chitchats.com/api/v1/clients/{CLIENT_ID}/shipments"
+
+    order_items = CartOrderItem.objects.filter(order=order).select_related("product")
+    total_qty = sum(i.qty for i in order_items)
+    estimated_weight = max(total_qty * 120, 50)
+
+    country_upper = (order.country or "").upper()
+    needs_province = country_upper in ("CA", "US")
+
+    payload = {
+        "name": order.full_name,
+        "address_1": order.address,
+        "city": order.city,
+        "postal_code": order.postal_code,
+        "country_code": country_upper,
+        "phone": str(order.mobile or ""),
+        "description": "Gloss lèvres - cosmétiques",
+        "value": str(order.sub_total),
+        "value_currency": "cad",
+        "package_type": "parcel",
+        "weight_unit": "g",
+        "weight": estimated_weight,
+        "size_unit": "cm",
+        "size_x": 15,
+        "size_y": 10,
+        "size_z": 5,
+        "insurance_requested": True,
+        "signature_requested": False,
+        "duties_paid_requested": False,
+        "ship_date": "today",
+        "postage_type": order.postage_type or "unknown",
+        "line_items": [
+            {
+                "quantity": i.qty,
+                "description": i.product.title,
+                "value_amount": str(Decimal(str(i.total)).quantize(Decimal("0.01"))),
+                "currency_code": "CAD",
+                "origin_country": "CA",
+                "hs_tariff_code": "3304100000" if country_upper == "US" else "330410",
+            }
+            for i in order_items
+        ],
+    }
+    if needs_province and order.state:
+        payload["province_code"] = order.state.upper()
+
+    try:
+        resp = requests.post(base_url, json=payload, headers=headers, timeout=15)
+        if not resp.ok:
+            log.error("ChitChats create shipment HTTP %s: %s", resp.status_code, resp.text[:500])
+            return None
+        body = resp.json()
+        data = body.get("shipment", body) if isinstance(body, dict) else {}
+        shipment_id = data.get("id")
+        log.info("ChitChats shipment created: id=%s order=%s", shipment_id, order.oid)
+        return str(shipment_id) if shipment_id else None
+    except Exception as exc:
+        log.error("ChitChats shipment exception: %s", exc)
+        return None
 
 
 def quickbooks_connect(request):
@@ -758,6 +836,16 @@ class PaymentSuccessView(generics.CreateAPIView):
                 # Marque la commande comme payée
                 order.payment_status = 'paid'
                 order.save(update_fields=['payment_status'])
+
+                # --- Créer le shipment définitif chez ChitChats ---
+                if not order.shipment_id:
+                    try:
+                        real_shipment_id = _create_chitchats_shipment(order)
+                        if real_shipment_id:
+                            order.shipment_id = real_shipment_id
+                            order.save(update_fields=['shipment_id'])
+                    except Exception:
+                        pass  # Ne pas bloquer la confirmation si ChitChats échoue
 
                 # --- Envoi email client ---
                 order_items = CartOrderItem.objects.filter(order=order)
@@ -1674,8 +1762,10 @@ class PrivateFeedbackView(APIView):
         email = request.data.get('email', '').strip()
         message = request.data.get('message', '').strip()
 
-        if not name or not email or not message:
-            return Response({'error': 'Tous les champs sont requis.'}, status=400)
+        if not message:
+            return Response({'error': 'Le message est requis.'}, status=400)
+        name = name or 'Anonyme'
+        email = email or ''
 
         order = None
         if token and order_oid:
