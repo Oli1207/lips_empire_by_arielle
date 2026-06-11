@@ -191,7 +191,7 @@ function GlobalReviewForm({ token, orderOid, name: defaultName, email: defaultEm
 
   if (done) return (
     <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 12, padding: '16px 20px', marginBottom: 16 }}>
-      <p style={{ margin: 0, color: '#065f46', fontWeight: 600 }}>Merci pour votre temoignage global !</p>
+      <p style={{ margin: 0, color: '#065f46', fontWeight: 600 }}>Merci pour votre avis !</p>
     </div>
   )
 
@@ -201,11 +201,11 @@ function GlobalReviewForm({ token, orderOid, name: defaultName, email: defaultEm
       borderRadius: 14, padding: '20px 22px', marginBottom: 16,
     }}>
       <p style={{ margin: '0 0 14px', fontWeight: 700, fontSize: 15, color: '#1a1a1a' }}>
-        Temoignage global sur la marque
+        Avis sur votre experience
       </p>
       <p style={{ margin: '0 0 16px', fontSize: 13, color: '#888', lineHeight: 1.6 }}>
-        Vous pouvez noter votre experience globale avec Lip's Empire by Arielle.
-        Ce temoignage pourra etre mis en avant sur notre site.
+        Laissez un avis general sur votre experience avec Lip's Empire by Arielle.
+        Il sera publie apres validation par notre equipe.
       </p>
 
       {!defaultName && (
@@ -225,11 +225,11 @@ function GlobalReviewForm({ token, orderOid, name: defaultName, email: defaultEm
         </>
       )}
 
-      <label style={{ fontSize: 13, color: '#555', fontWeight: 600 }}>Note globale *</label>
+      <label style={{ fontSize: 13, color: '#555', fontWeight: 600 }}>Note *</label>
       <StarPicker value={rating} onChange={setRating} />
 
       <label style={{ fontSize: 13, color: '#555', fontWeight: 600, display: 'block', marginTop: 12, marginBottom: 4 }}>
-        Votre temoignage *
+        Votre avis *
       </label>
       <textarea
         value={text}
@@ -252,7 +252,7 @@ function GlobalReviewForm({ token, orderOid, name: defaultName, email: defaultEm
         border: 'none', borderRadius: 10, padding: '12px 28px',
         fontWeight: 700, fontSize: 14, cursor: 'pointer', width: '100%',
       }}>
-        {loading ? 'Envoi...' : 'Envoyer mon temoignage global'}
+        {loading ? 'Envoi...' : 'Publier mon avis'}
       </button>
     </form>
   )
@@ -379,11 +379,11 @@ export default function ReviewPage() {
           </div>
         )}
 
-        {/* Temoignage global — toujours disponible */}
+        {/* Avis general — toujours disponible */}
         <div style={{ marginTop: 8 }}>
           {mode === 'verified' && (
             <p style={{ fontSize: 13, color: '#aaa', textAlign: 'center', marginBottom: 12 }}>
-              Vous pouvez aussi laisser un temoignage global sur votre experience avec la marque
+              Vous pouvez aussi laisser un avis sur votre experience generale avec la marque
             </p>
           )}
           <GlobalReviewForm

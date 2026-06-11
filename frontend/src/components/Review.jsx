@@ -1,7 +1,7 @@
 // src/components/Review.jsx
 
 import React, { useEffect, useState } from 'react';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import apiInstance from '../utils/axios';
 
 const Review = ({ product, userData }) => {
@@ -101,7 +101,7 @@ const Review = ({ product, userData }) => {
                                 <div className="col-md-9">
                                     <div className="card-body">
                                         <h5 className="card-title">{r.profile.full_name}</h5>
-                                        <p className="card-text">{moment(r.date).format("D MMMM, YYYY")}</p>
+                                        <p className="card-text">{dayjs(r.date).format("D MMMM, YYYY")}</p>
                                         <p className="card-text">{r.review}</p>
                                         <div className="card-text">
                                             {[...Array(parseInt(r.rating))].map((_, i) => (

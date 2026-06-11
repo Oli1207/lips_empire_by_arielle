@@ -1,8 +1,6 @@
 import React from 'react';
 import { Carousel } from 'react-bootstrap';
-import gloss1 from './gloss1.jpg';
-import gloss2 from './lips_empire_img.jpg';
-import gloss3 from './gloss3.jpg';
+const gloss2 = '/lips_empire_img.jpg';
 
 const GlossCarousel = () => {
   return (

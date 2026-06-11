@@ -851,10 +851,8 @@ class ReviewListAPIView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         product_id = self.kwargs['product_id']
-
-        product  = Product.objects.get(id=product_id)
-        reviews = Review.objects.filter(product=product)
-        return reviews
+        product = Product.objects.get(id=product_id)
+        return Review.objects.filter(product=product, status='approved')
 
     def create(self, request, *args, **kwargs):
         payload = request.data

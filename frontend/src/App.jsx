@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, lazy, Suspense } from 'react'
 import { Routes, Route, BrowserRouter, Navigate, useLocation } from 'react-router-dom'
 import { HelmetProvider, Helmet } from 'react-helmet-async'
 import { SITE } from './utils/seo'
@@ -29,19 +29,19 @@ import { initTracking, trackPageView } from './utils/tracking'
 import { initPromo } from './utils/promo'
 import PromoBanner from './components/PromoBanner'
 
-// Admin
+// Admin — lazy loaded
 import AdminRoute from './layout/AdminRoute'
 import AdminLayout from './layout/AdminLayout'
-import AdminDashboard from './screens/admin/AdminDashboard'
-import AdminOrders from './screens/admin/AdminOrders'
-import AdminProducts from './screens/admin/AdminProducts'
-import AdminCoupons from './screens/admin/AdminCoupons'
-import AdminReviews from './screens/admin/AdminReviews'
-import AdminAnalytics from './screens/admin/AdminAnalytics'
-import AdminUsers from './screens/admin/AdminUsers'
-import AdminFeedbacks from './screens/admin/AdminFeedbacks'
-import ReviewPage from './screens/ReviewPage'
-import FeedbackPage from './screens/FeedbackPage'
+const AdminDashboard = lazy(() => import('./screens/admin/AdminDashboard'))
+const AdminOrders    = lazy(() => import('./screens/admin/AdminOrders'))
+const AdminProducts  = lazy(() => import('./screens/admin/AdminProducts'))
+const AdminCoupons   = lazy(() => import('./screens/admin/AdminCoupons'))
+const AdminReviews   = lazy(() => import('./screens/admin/AdminReviews'))
+const AdminAnalytics = lazy(() => import('./screens/admin/AdminAnalytics'))
+const AdminUsers     = lazy(() => import('./screens/admin/AdminUsers'))
+const AdminFeedbacks = lazy(() => import('./screens/admin/AdminFeedbacks'))
+const ReviewPage     = lazy(() => import('./screens/ReviewPage'))
+const FeedbackPage   = lazy(() => import('./screens/FeedbackPage'))
 import CartSlideIn from './components/CartSlideIn'
 import AccountScreen from './screens/AccountScreen'
 
@@ -109,23 +109,25 @@ function AppContent() {
         <Route path="/livraison" element={<LivraisonScreen />} />
         <Route path="/search" element={<Search />} />
         <Route path="/account" element={<AccountScreen />} />
-        <Route path="/review" element={<ReviewPage />} />
-        <Route path="/feedback" element={<FeedbackPage />} />
+        <Route path="/review" element={<Suspense fallback={null}><ReviewPage /></Suspense>} />
+        <Route path="/feedback" element={<Suspense fallback={null}><FeedbackPage /></Suspense>} />
 
         {/* Routes Admin */}
         <Route path="/admin-panel/*" element={
           <AdminRoute>
             <AdminLayout>
-              <Routes>
-                <Route index element={<AdminDashboard />} />
-                <Route path="orders" element={<AdminOrders />} />
-                <Route path="products" element={<AdminProducts />} />
-                <Route path="coupons" element={<AdminCoupons />} />
-                <Route path="reviews" element={<AdminReviews />} />
-                <Route path="feedbacks" element={<AdminFeedbacks />} />
-                <Route path="users" element={<AdminUsers />} />
-                <Route path="analytics" element={<AdminAnalytics />} />
-              </Routes>
+              <Suspense fallback={<div style={{padding:40,textAlign:'center',color:'#aaa'}}>Chargement...</div>}>
+                <Routes>
+                  <Route index element={<AdminDashboard />} />
+                  <Route path="orders" element={<AdminOrders />} />
+                  <Route path="products" element={<AdminProducts />} />
+                  <Route path="coupons" element={<AdminCoupons />} />
+                  <Route path="reviews" element={<AdminReviews />} />
+                  <Route path="feedbacks" element={<AdminFeedbacks />} />
+                  <Route path="users" element={<AdminUsers />} />
+                  <Route path="analytics" element={<AdminAnalytics />} />
+                </Routes>
+              </Suspense>
             </AdminLayout>
           </AdminRoute>
         } />

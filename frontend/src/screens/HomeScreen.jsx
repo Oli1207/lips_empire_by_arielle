@@ -11,7 +11,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import './homescreen.css'
 import ContactForm from '../components/ContactForm';
 import ReviewCarousel from '../components/ReviewCarousel';
-import show from './show.jpg';
 import { CartContext } from '../plugin/Context';
 
 

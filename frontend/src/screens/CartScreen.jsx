@@ -1,13 +1,6 @@
 import { React, useEffect, useState, useContext } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-} from "@mui/material";
 import PolicyScreen from "./PolicyScreen";
 ("./PolicyScreen");
 // Icons
@@ -776,34 +769,40 @@ function CartScreen() {
                             </div>
                           </div>
 
-                          {/* CHANGE: la modal MUI avec les CGV */}
-                          <Dialog
-                            open={openPolicy}
-                            onClose={() => setOpenPolicy(false)}
-                            fullWidth
-                            maxWidth="md"
-                          >
-                            <DialogTitle style={{ color: "#FEDBD1" }}>
-                              Conditions générales de vente
-                            </DialogTitle>
-
-                            <DialogContent
-                              dividers
-                              style={{ maxHeight: "70vh", overflowY: "auto" }}
+                          {/* Modal CGV sans MUI */}
+                          {openPolicy && (
+                            <div
+                              style={{
+                                position: 'fixed', inset: 0, zIndex: 1050,
+                                background: 'rgba(0,0,0,0.5)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                padding: 16,
+                              }}
+                              onClick={() => setOpenPolicy(false)}
                             >
-                              {/* On réutilise ton composant en mode "embedded" */}
-                              <PolicyScreen embedded />
-                            </DialogContent>
-
-                            <DialogActions>
-                              <Button
-                                variant="contained"
-                                onClick={() => setOpenPolicy(false)}
+                              <div
+                                style={{
+                                  background: '#1a1a1a', borderRadius: 12,
+                                  width: '100%', maxWidth: 720,
+                                  maxHeight: '80vh', display: 'flex', flexDirection: 'column',
+                                }}
+                                onClick={e => e.stopPropagation()}
                               >
-                                Fermer
-                              </Button>
-                            </DialogActions>
-                          </Dialog>
+                                <div style={{ padding: '16px 20px', borderBottom: '1px solid #2d2d2d', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <span style={{ color: '#FEDBD1', fontWeight: 700 }}>Conditions generales de vente</span>
+                                  <button onClick={() => setOpenPolicy(false)} style={{ background: 'none', border: 'none', color: '#aaa', fontSize: 20, cursor: 'pointer', lineHeight: 1 }}>x</button>
+                                </div>
+                                <div style={{ overflowY: 'auto', flex: 1, padding: '16px 20px' }}>
+                                  <PolicyScreen embedded />
+                                </div>
+                                <div style={{ padding: '12px 20px', borderTop: '1px solid #2d2d2d', textAlign: 'right' }}>
+                                  <button onClick={() => setOpenPolicy(false)} style={{ background: '#FEDBD1', color: '#1a1a1a', border: 'none', borderRadius: 8, padding: '9px 20px', fontWeight: 700, cursor: 'pointer' }}>
+                                    Fermer
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
 
                           {/* ── Création de compte (invité uniquement) ── */}
                           {!userData && (

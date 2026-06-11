@@ -84,7 +84,7 @@ function AdminLayout({ children }) {
       )}
 
       {/* Main */}
-      <main style={{ flex: 1, marginLeft: 0 }} className="admin-main-content">
+      <main style={{ flex: 1 }} className="admin-main-content">
         {/* Mobile topbar */}
         <div className="d-lg-none" style={{
           background: '#1a1a1a', padding: '12px 16px',
