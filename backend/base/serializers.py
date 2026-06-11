@@ -259,17 +259,22 @@ class ContactSerializer(serializers.ModelSerializer):
         
 
 class ReviewSerializer(serializers.ModelSerializer):
-    profile = ProfileSerializer()
+    profile = serializers.SerializerMethodField()
+    reviewer_display_name = serializers.SerializerMethodField()
+
     class Meta:
         model = Review
-        fields = ['id', 'review', 'rating', 'user', 'profile', 'date']
+        fields = ['id', 'review', 'rating', 'user', 'profile', 'reviewer_display_name',
+                  'reviewer_name', 'rating', 'date', 'is_verified_purchase']
 
-    def __init__(self, *args, **kwargs):
-        super(ReviewSerializer, self).__init__(*args, **kwargs)
+    def get_profile(self, obj):
+        if obj.user and hasattr(obj.user, 'profile'):
+            return ProfileSerializer(obj.user.profile).data
+        return None
 
-        request = self.context.get("request")
-        if request and request.method == "POST":
-            self.Meta.depth = 0
-
-        else:
-            self.Meta.depth = 3
+    def get_reviewer_display_name(self, obj):
+        if obj.reviewer_name:
+            return obj.reviewer_name
+        if obj.user:
+            return obj.user.username
+        return 'Anonyme'

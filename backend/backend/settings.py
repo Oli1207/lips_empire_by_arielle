@@ -93,7 +93,7 @@ STATIC_URL = "/static/"
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'frontend', 'dist', 'static')]
 STATIC_ROOT = "/home/c2527231c/public_html/static/"
 
-MEDIA_URL = "/media/"
+MEDIA_URL = "https://lipsempirebyarielle.store/media/"
 MEDIA_ROOT = "/home/c2527231c/public_html/media/"
 
 CORS_ALLOWED_ORIGINS = [
