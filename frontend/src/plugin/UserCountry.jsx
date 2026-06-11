@@ -1,20 +1,40 @@
 import { useState, useEffect } from "react";
 
+const GEO_CACHE_KEY = 'le_geo'
+const GEO_TTL = 24 * 60 * 60 * 1000 // 24h
+
 function GetCurrentAddress() {
     const [add, SetAdd] = useState('')
-   useEffect(() => {
-    navigator.geolocation.getCurrentPosition(pos =>{
-        const { latitude, longitude} = pos.coords
 
-        const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+    useEffect(() => {
+        try {
+            const cached = localStorage.getItem(GEO_CACHE_KEY)
+            if (cached) {
+                const { data, ts } = JSON.parse(cached)
+                if (Date.now() - ts < GEO_TTL) {
+                    SetAdd(data)
+                    return
+                }
+            }
+        } catch {}
 
-        fetch(url)
-        .then(res => res.json())
-        .then(data => SetAdd(data.address))
-    })
-}, [])
+        fetch('https://ipapi.co/json/')
+            .then(res => res.json())
+            .then(data => {
+                const result = {
+                    country_code: data.country_code,
+                    country: data.country_name,
+                    city: data.city,
+                }
+                try {
+                    localStorage.setItem(GEO_CACHE_KEY, JSON.stringify({ data: result, ts: Date.now() }))
+                } catch {}
+                SetAdd(result)
+            })
+            .catch(() => {})
+    }, [])
 
-return add
+    return add
 }
 
 

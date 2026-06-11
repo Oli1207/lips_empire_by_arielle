@@ -17,6 +17,7 @@ import { Link } from "react-router-dom";
 
 const Header = () => {
   const isLoggedIn = useAuthStore(s => s.isLoggedIn)
+  const isAdmin = useAuthStore(s => s.allUserData?.admin === true)
   const [showLogo, setShowLogo] = useState(true);
   const [showContent, setShowContent] = useState(false);
   const [showOffcanvas, setShowOffcanvas] = useState(false); // Pour l'Offcanvas
@@ -161,6 +162,13 @@ const Header = () => {
                     <span style={{color:"black"}} className="ms-2">CONNEXION</span>
                   </Nav.Link>
                 )}
+                {isAdmin && (
+                  <Nav.Link href="/admin-panel" className="nav-link">
+                    <span style={{ color: '#c44569', fontWeight: 700, fontSize: 12, border: '1px solid #c44569', borderRadius: 6, padding: '3px 8px' }}>
+                      ESPACE ADMIN
+                    </span>
+                  </Nav.Link>
+                )}
               </Nav>
             </Navbar.Collapse>
 
@@ -208,6 +216,11 @@ const Header = () => {
                     <Nav.Link href="/login" className="nav-link">
                       <FontAwesomeIcon icon={faUser} />
                       <span className="ms-2">CONNEXION</span>
+                    </Nav.Link>
+                  )}
+                  {isAdmin && (
+                    <Nav.Link href="/admin-panel" className="nav-link">
+                      <span style={{ color: '#fedbd1', fontWeight: 700, fontSize: 12 }}>ESPACE ADMIN</span>
                     </Nav.Link>
                   )}
                 </Nav>

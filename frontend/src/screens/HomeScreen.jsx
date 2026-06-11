@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react'
+import { trackProductHoverStart, trackProductHoverEnd } from '../utils/tracking'
 import SEO from '../components/SEO'
 import GlossCarousel from '../components/GlossCarousel'
 import apiInstance from '../utils/axios';
@@ -9,6 +10,7 @@ import Swal from 'sweetalert2'
 import { Link, useNavigate } from 'react-router-dom';
 import './homescreen.css'
 import ContactForm from '../components/ContactForm';
+import ReviewCarousel from '../components/ReviewCarousel';
 import show from './show.jpg';
 import { CartContext } from '../plugin/Context';
 
@@ -192,27 +194,35 @@ const handleSearchKey = (e) => {
   </button>
             <div className="product-scroll-container">
               {products?.map((p, index) => (
-                <div className={`product-card ${showSpecifications[p.id] || expandedDescriptions[p.id] ? 'expanded' : ''}`} key={index}>
+                <div
+                  className={`product-card ${showSpecifications[p.id] || expandedDescriptions[p.id] ? 'expanded' : ''}`}
+                  key={index}
+                  onMouseEnter={() => trackProductHoverStart(p.id)}
+                  onMouseLeave={() => trackProductHoverEnd(p.id)}
+                >
                   <div className="card shadow-sm border-light rounded">
                     <Link to={`/detail/${p.slug}`} style={{ position: 'relative', display: 'block' }}>
-                      {!imgLoaded[p.id] && (
-                        <div style={{
-                          width: '100%', aspectRatio: '1/1',
-                          background: 'linear-gradient(90deg, #fce4dc 25%, #fedbd1 50%, #fce4dc 75%)',
-                          backgroundSize: '200% 100%',
-                          animation: 'shimmer 1.4s infinite',
-                          borderRadius: '8px 8px 0 0',
-                        }} />
-                      )}
-                      <img
-                        src={p?.image?.replace("backend.lipsempirebyarielle.store", "lipsempirebyarielle.store")}
-                        className="card-img-top product-image"
-                        alt={p.title}
-                        loading="lazy"
-                        decoding="async"
-                        onLoad={() => setImgLoaded(prev => ({ ...prev, [p.id]: true }))}
-                        style={{ display: imgLoaded[p.id] ? 'block' : 'none' }}
-                      />
+                      <div style={{ position: 'relative' }}>
+                        {!imgLoaded[p.id] && (
+                          <div style={{
+                            position: 'absolute', inset: 0,
+                            background: 'linear-gradient(90deg, #fce4dc 25%, #fedbd1 50%, #fce4dc 75%)',
+                            backgroundSize: '200% 100%',
+                            animation: 'shimmer 1.4s infinite',
+                            borderRadius: '8px 8px 0 0',
+                            zIndex: 1,
+                          }} />
+                        )}
+                        <img
+                          src={p?.image?.replace("backend.lipsempirebyarielle.store", "lipsempirebyarielle.store")}
+                          className="card-img-top product-image"
+                          alt={p.title}
+                          loading="lazy"
+                          decoding="async"
+                          onLoad={() => setImgLoaded(prev => ({ ...prev, [p.id]: true }))}
+                          style={{ display: 'block', opacity: imgLoaded[p.id] ? 1 : 0, transition: 'opacity 0.3s' }}
+                        />
+                      </div>
                       {p.stock_qty > 0 && p.stock_qty <= 3 && (
                         <span style={{
                           position: 'absolute', top: 8, left: 8,
@@ -355,6 +365,8 @@ const handleSearchKey = (e) => {
           </div>
         </div>
       </section>
+
+      <ReviewCarousel />
 
       <section className="container mt-4">
      {/*   <div style={{marginTop:"80px"}} className="row align-items-center">

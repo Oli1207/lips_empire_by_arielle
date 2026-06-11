@@ -1,114 +1,267 @@
-import React, { useEffect, useState } from 'react'
-import adminAxios from '../../utils/adminAxios'
-import Swal from 'sweetalert2'
-import { CheckCircle, XCircle, Trash2 } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { useAuthStore } from '../../store/auth'
+import apiInstance from '../../utils/axios'
 
-const BRAND = '#fedbd1'
-const DARK = '#1a1a1a'
+const BACKEND = import.meta.env.VITE_REACT_APP_API_URL?.replace('/api/v1/', '') || ''
 
-function Stars({ n }) {
-  return <span>{Array.from({ length: 5 }, (_, i) => (
-    <span key={i} style={{ color: i < n ? '#f59e0b' : '#e5e7eb', fontSize: 14 }}>★</span>
-  ))}</span>
+const STATUS_LABELS = {
+  pending: { label: 'En attente', color: '#d97706', bg: '#fef3c7' },
+  approved: { label: 'Approuve', color: '#065f46', bg: '#d1fae5' },
+  rejected: { label: 'Refuse', color: '#991b1b', bg: '#fee2e2' },
 }
 
-function AdminReviews() {
-  const [reviews, setReviews] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState('all')
+function StatusBadge({ status }) {
+  const s = STATUS_LABELS[status] || STATUS_LABELS.pending
+  return (
+    <span style={{
+      background: s.bg, color: s.color,
+      fontSize: 11, fontWeight: 700, padding: '3px 9px',
+      borderRadius: 20, letterSpacing: 0.3,
+    }}>{s.label}</span>
+  )
+}
 
-  const load = () => {
-    const params = filter !== 'all' ? { active: filter === 'active' } : {}
-    adminAxios.get('admin/reviews/', { params })
-      .then(r => setReviews(r.data))
-      .catch(() => {})
-      .finally(() => setLoading(false))
-  }
+function StarDisplay({ rating }) {
+  return (
+    <span style={{ color: '#f59e0b', fontSize: 13 }}>
+      {'★'.repeat(Math.round(rating || 0))}{'☆'.repeat(5 - Math.round(rating || 0))}
+    </span>
+  )
+}
 
-  useEffect(() => { load() }, [filter])
+function PhotosRow({ photos }) {
+  if (!photos || photos.length === 0) return null
+  return (
+    <div style={{ display: 'flex', gap: 6, marginTop: 10, flexWrap: 'wrap' }}>
+      {photos.map((ph, i) => (
+        <a key={i} href={`${BACKEND}${ph.image}`} target="_blank" rel="noreferrer">
+          <img
+            src={`${BACKEND}${ph.image}`}
+            alt=""
+            style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 7, border: '1px solid #f0f0f0', cursor: 'zoom-in' }}
+          />
+        </a>
+      ))}
+    </div>
+  )
+}
 
-  const approve = async (id) => {
-    await adminAxios.patch(`admin/reviews/${id}/`, { active: true })
-    load()
-  }
-
-  const reject = async (id) => {
-    await adminAxios.patch(`admin/reviews/${id}/`, { active: false })
-    load()
-  }
-
-  const del = async (id) => {
-    const result = await Swal.fire({
-      icon: 'warning', title: 'Supprimer cet avis ?',
-      showCancelButton: true, confirmButtonText: 'Supprimer', cancelButtonText: 'Annuler',
-      confirmButtonColor: '#ef4444',
-    })
-    if (!result.isConfirmed) return
-    await adminAxios.delete(`admin/reviews/${id}/`); load()
-  }
+function ReviewRow({ review, onAction }) {
+  const [open, setOpen] = useState(false)
 
   return (
-    <div>
-      <h4 style={{ marginBottom: 6, fontWeight: 700, color: DARK }}>Avis clients</h4>
-      <p style={{ marginBottom: 20, fontSize: 13, color: '#888' }}>{reviews.length} avis</p>
-
-      <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-        {[['all', 'Tous'], ['pending', 'En attente'], ['active', 'Publiés']].map(([val, label]) => (
-          <button key={val} onClick={() => setFilter(val)} style={{
-            padding: '7px 16px', borderRadius: 20, fontSize: 12, fontWeight: 500, cursor: 'pointer', border: 'none',
-            background: filter === val ? DARK : '#f3f4f6',
-            color: filter === val ? '#fff' : '#666',
-          }}>{label}</button>
-        ))}
+    <div style={{
+      background: '#fff', border: '1px solid #f0f0f0',
+      borderRadius: 14, marginBottom: 12, overflow: 'hidden',
+    }}>
+      <div
+        onClick={() => setOpen(o => !o)}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 14,
+          padding: '14px 18px', cursor: 'pointer',
+        }}
+      >
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+            <StatusBadge status={review.status} />
+            {review.is_featured && (
+              <span style={{ background: '#fdf6f4', color: '#c44569', fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 20, border: '1px solid #fedbd1' }}>
+                Mis en avant
+              </span>
+            )}
+            {review.is_verified_purchase && (
+              <span style={{ background: '#f0fdf4', color: '#065f46', fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 20, border: '1px solid #bbf7d0' }}>
+                Achat verifie
+              </span>
+            )}
+            {review.is_global && (
+              <span style={{ background: '#eff6ff', color: '#1d4ed8', fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 20, border: '1px solid #bfdbfe' }}>
+                Avis global
+              </span>
+            )}
+          </div>
+          <div style={{ marginTop: 5, display: 'flex', gap: 12, alignItems: 'center' }}>
+            <StarDisplay rating={review.rating} />
+            <span style={{ fontWeight: 700, fontSize: 13, color: '#1a1a1a' }}>
+              {review.reviewer_name || 'Anonyme'}
+            </span>
+            <span style={{ fontSize: 12, color: '#aaa' }}>
+              {review.reviewer_email}
+            </span>
+          </div>
+          {review.product_title && (
+            <p style={{ margin: '3px 0 0', fontSize: 12, color: '#888' }}>
+              Produit : {review.product_title}
+            </p>
+          )}
+          <p style={{
+            margin: '6px 0 0', fontSize: 13, color: '#555',
+            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+            maxWidth: 500,
+          }}>
+            {review.review}
+          </p>
+        </div>
+        <svg
+          width="16" height="16" viewBox="0 0 24 24" fill="none"
+          stroke="#bbb" strokeWidth="2" strokeLinecap="round"
+          style={{ transform: open ? 'rotate(180deg)' : 'rotate(0)', transition: '0.2s', flexShrink: 0 }}
+        >
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
       </div>
 
-      {loading ? <p style={{ color: '#aaa' }}>Chargement…</p> : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {reviews.map(r => (
-            <div key={r.id} style={{ background: '#fff', borderRadius: 12, border: '1px solid #eee', padding: '16px 20px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
-                <div>
-                  <p style={{ margin: 0, fontWeight: 600, fontSize: 14, color: DARK }}>
-                    {r.user?.full_name || r.user?.email || 'Anonyme'}
-                  </p>
-                  <p style={{ margin: '2px 0 0', fontSize: 12, color: '#aaa' }}>
-                    {r.product?.title || 'Produit'} — {new Date(r.date).toLocaleDateString('fr-FR')}
-                  </p>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Stars n={r.rating} />
-                  <span style={{
-                    padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 500,
-                    background: r.active ? '#d1fae5' : '#fef3c7',
-                    color: r.active ? '#065f46' : '#92400e',
-                  }}>{r.active ? 'Publié' : 'En attente'}</span>
-                </div>
-              </div>
+      {open && (
+        <div style={{ borderTop: '1px solid #f9f9f9', padding: '16px 18px', background: '#fafafa' }}>
+          <p style={{ fontSize: 14, color: '#333', lineHeight: 1.7, margin: '0 0 10px' }}>
+            "{review.review}"
+          </p>
+          <PhotosRow photos={review.photos} />
 
-              <p style={{ margin: '0 0 14px', fontSize: 13, color: '#555', lineHeight: 1.6 }}>{r.review}</p>
+          <div style={{
+            marginTop: 16, background: '#fffbeb', border: '1px solid #fde68a',
+            borderRadius: 10, padding: '12px 16px',
+          }}>
+            <p style={{ margin: '0 0 6px', fontSize: 12, fontWeight: 700, color: '#92400e' }}>
+              Que faire avec cet avis ?
+            </p>
+            <ul style={{ margin: 0, paddingLeft: 16, fontSize: 12, color: '#78350f', lineHeight: 1.8 }}>
+              <li><strong>Approuver</strong> : l'avis sera visible publiquement sur le site</li>
+              <li><strong>Refuser</strong> : l'avis reste cache, la cliente ne le sait pas</li>
+              <li><strong>Mettre en avant</strong> : l'avis apparaitra dans le carousel de la page d'accueil</li>
+            </ul>
+          </div>
 
-              <div style={{ display: 'flex', gap: 8 }}>
-                {!r.active && (
-                  <button onClick={() => approve(r.id)} style={{ display: 'flex', alignItems: 'center', gap: 5, background: '#d1fae5', border: 'none', borderRadius: 7, padding: '7px 14px', fontSize: 12, color: '#065f46', cursor: 'pointer', fontWeight: 500 }}>
-                    <CheckCircle size={14} /> Approuver
-                  </button>
-                )}
-                {r.active && (
-                  <button onClick={() => reject(r.id)} style={{ display: 'flex', alignItems: 'center', gap: 5, background: '#fef3c7', border: 'none', borderRadius: 7, padding: '7px 14px', fontSize: 12, color: '#92400e', cursor: 'pointer', fontWeight: 500 }}>
-                    <XCircle size={14} /> Retirer
-                  </button>
-                )}
-                <button onClick={() => del(r.id)} style={{ display: 'flex', alignItems: 'center', gap: 5, background: '#fee2e2', border: 'none', borderRadius: 7, padding: '7px 14px', fontSize: 12, color: '#991b1b', cursor: 'pointer', fontWeight: 500 }}>
-                  <Trash2 size={14} /> Supprimer
-                </button>
-              </div>
-            </div>
-          ))}
-          {reviews.length === 0 && <p style={{ textAlign: 'center', color: '#aaa', padding: 30 }}>Aucun avis</p>}
+          <div style={{ display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap' }}>
+            {review.status !== 'approved' && (
+              <button
+                onClick={() => onAction(review.id, 'approve')}
+                style={{
+                  background: '#065f46', color: '#fff',
+                  border: 'none', borderRadius: 8, padding: '9px 18px',
+                  fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                }}
+              >
+                Approuver
+              </button>
+            )}
+            {review.status !== 'rejected' && (
+              <button
+                onClick={() => onAction(review.id, 'reject')}
+                style={{
+                  background: '#991b1b', color: '#fff',
+                  border: 'none', borderRadius: 8, padding: '9px 18px',
+                  fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                }}
+              >
+                Refuser
+              </button>
+            )}
+            <button
+              onClick={() => onAction(review.id, 'toggle_featured')}
+              style={{
+                background: review.is_featured ? '#c44569' : '#fff',
+                color: review.is_featured ? '#fff' : '#c44569',
+                border: '1px solid #c44569',
+                borderRadius: 8, padding: '9px 18px',
+                fontSize: 13, fontWeight: 700, cursor: 'pointer',
+              }}
+            >
+              {review.is_featured ? 'Retirer du carousel' : 'Mettre en avant (carousel)'}
+            </button>
+          </div>
         </div>
       )}
     </div>
   )
 }
 
-export default AdminReviews
+export default function AdminReviews() {
+  const [reviews, setReviews] = useState([])
+  const [filter, setFilter] = useState('pending')
+  const [loading, setLoading] = useState(true)
+  const { allUserData } = useAuthStore()
+
+  const load = (status) => {
+    setLoading(true)
+    const q = status !== 'all' ? `?status=${status}` : ''
+    apiInstance.get(`admin/reviews-manage/${q}`, {
+      headers: { Authorization: `Bearer ${allUserData?.access}` }
+    }).then(r => {
+      setReviews(r.data)
+    }).finally(() => setLoading(false))
+  }
+
+  useEffect(() => { load(filter) }, [filter])
+
+  const handleAction = async (pk, action) => {
+    await apiInstance.patch(`admin/reviews-manage/${pk}/`, { action }, {
+      headers: { Authorization: `Bearer ${allUserData?.access}` }
+    })
+    load(filter)
+  }
+
+  const pendingCount = filter === 'pending' ? reviews.length : 0
+
+  return (
+    <div>
+      <div style={{ marginBottom: 24 }}>
+        <h2 style={{ fontWeight: 700, fontSize: 22, color: '#1a1a1a', margin: '0 0 6px' }}>
+          Gestion des avis clients
+        </h2>
+        <p style={{ margin: 0, color: '#888', fontSize: 14, lineHeight: 1.6 }}>
+          Ici vous pouvez lire les avis laisses par vos clientes, les approuver ou les refuser avant publication,
+          et choisir lesquels apparaissent en evidence sur la page d'accueil.
+          <br />
+          <strong style={{ color: '#c44569' }}>Un avis non approuve n'est jamais visible par le public.</strong>
+        </p>
+      </div>
+
+      <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
+        {[
+          { key: 'pending', label: "En attente d'approbation" },
+          { key: 'approved', label: 'Approuves' },
+          { key: 'rejected', label: 'Refuses' },
+          { key: 'all', label: 'Tous' },
+        ].map(f => (
+          <button
+            key={f.key}
+            onClick={() => setFilter(f.key)}
+            style={{
+              border: filter === f.key ? 'none' : '1px solid #e5e7eb',
+              background: filter === f.key ? '#1a1a1a' : '#fff',
+              color: filter === f.key ? '#fedbd1' : '#555',
+              borderRadius: 8, padding: '8px 16px',
+              fontSize: 13, fontWeight: 600, cursor: 'pointer',
+            }}
+          >
+            {f.label}
+            {f.key === 'pending' && pendingCount > 0 && (
+              <span style={{
+                marginLeft: 6, background: '#c44569', color: '#fff',
+                borderRadius: 20, fontSize: 10, padding: '1px 6px', fontWeight: 700,
+              }}>{pendingCount}</span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {loading ? (
+        <p style={{ color: '#aaa', textAlign: 'center', padding: 40 }}>Chargement...</p>
+      ) : reviews.length === 0 ? (
+        <div style={{
+          textAlign: 'center', padding: '48px 20px',
+          background: '#fff', borderRadius: 14, border: '1px solid #f0f0f0',
+        }}>
+          <p style={{ color: '#aaa', fontSize: 14, margin: 0 }}>
+            {filter === 'pending'
+              ? 'Aucun avis en attente — tout est a jour !'
+              : 'Aucun avis dans cette categorie.'}
+          </p>
+        </div>
+      ) : (
+        reviews.map(r => <ReviewRow key={r.id} review={r} onAction={handleAction} />)
+      )}
+    </div>
+  )
+}

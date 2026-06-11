@@ -219,10 +219,13 @@ class CartOrder(models.Model):
     oid = ShortUUIDField(unique=True, length=10, alphabet="abcdefghijklmnopqrstuvwxyz")
     date  = models.DateTimeField(auto_now_add=True)
     terms_accepted = models.BooleanField(default=False)
+    review_email_scheduled_at = models.DateTimeField(null=True, blank=True)
+    review_email_sent = models.BooleanField(default=False)
+    reminder_email_sent = models.BooleanField(default=False)
 
     def __str__(self):
         return self.oid
-    
+
     def orderitem(self):
         return CartOrderItem.objects.filter(order=self)
 
@@ -300,19 +303,56 @@ class Review(models.Model):
         (4, "4 Star"),
         (5, "5 Star"),
     )
+    STATUS = (
+        ('pending', 'En attente'),
+        ('approved', 'Approuvé'),
+        ('rejected', 'Rejeté'),
+    )
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, null=True, blank=True)
+    order = models.ForeignKey('CartOrder', on_delete=models.SET_NULL, null=True, blank=True, related_name='reviews')
+    reviewer_name = models.CharField(max_length=100, blank=True)
+    reviewer_email = models.EmailField(blank=True)
     review = models.TextField()
     reply = models.TextField(null=True, blank=True)
     rating = models.IntegerField(default=None, choices=RATING)
     active = models.BooleanField(default=False)
-    date=models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, choices=STATUS, default='pending')
+    is_verified_purchase = models.BooleanField(default=False)
+    is_featured = models.BooleanField(default=False)
+    is_global = models.BooleanField(default=False)
+    date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.product.title
+        return self.product.title if self.product else f"Avis global — {self.reviewer_name or self.user}"
 
     class Meta:
         verbose_name_plural = "Reviews & Rating"
+
+
+class ReviewPhoto(models.Model):
+    review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name='photos')
+    image = models.ImageField(upload_to='review_photos/')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Photo avis #{self.review_id}"
+
+
+class PrivateFeedback(models.Model):
+    order = models.ForeignKey(CartOrder, on_delete=models.SET_NULL, null=True, blank=True)
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} — {self.created_at.date()}"
+
+    class Meta:
+        verbose_name_plural = "Feedbacks privés"
+        ordering = ['-created_at']
 
     def profile(self):
         return Profile.objects.get(user=self.user)
@@ -386,6 +426,15 @@ class AnalyticsSession(models.Model):
     ref = models.CharField(max_length=200, null=True, blank=True)
     device_type = models.CharField(max_length=50, null=True, blank=True)
     country = models.CharField(max_length=10, null=True, blank=True)
+    referrer = models.CharField(max_length=500, null=True, blank=True)
+    is_new_visitor = models.BooleanField(null=True)
+    screen_res = models.CharField(max_length=20, null=True, blank=True)
+    timezone = models.CharField(max_length=80, null=True, blank=True)
+    language = models.CharField(max_length=20, null=True, blank=True)
+    browser = models.CharField(max_length=100, null=True, blank=True)
+    os = models.CharField(max_length=100, null=True, blank=True)
+    fingerprint = models.CharField(max_length=64, null=True, blank=True)
+    visit_count = models.IntegerField(default=1)
     created_at = models.DateTimeField(auto_now_add=True)
     last_seen = models.DateTimeField(auto_now=True)
 

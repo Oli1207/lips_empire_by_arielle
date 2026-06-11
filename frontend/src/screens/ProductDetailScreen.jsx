@@ -292,6 +292,7 @@ function ProductDetailScreen() {
 
    
     return (
+        <>
         <main style={{marginTop: "22px", marginBottom: "50px"}}>
             <SEO
                 title={product.title}
@@ -711,6 +712,7 @@ function ProductDetailScreen() {
                 {product.stock_qty === 0 ? 'Épuisé' : 'Ajouter au panier'}
             </button>
         </div>
+        </>
     );
 }
 

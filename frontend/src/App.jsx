@@ -25,7 +25,7 @@ import { CartContext } from './plugin/Context'
 import CartID from './plugin/CartID'
 import UserData from './plugin/UserData'
 import apiInstance from './utils/axios'
-import { initTracking, trackEvent } from './utils/tracking'
+import { initTracking, trackPageView } from './utils/tracking'
 import { initPromo } from './utils/promo'
 import PromoBanner from './components/PromoBanner'
 
@@ -39,6 +39,9 @@ import AdminCoupons from './screens/admin/AdminCoupons'
 import AdminReviews from './screens/admin/AdminReviews'
 import AdminAnalytics from './screens/admin/AdminAnalytics'
 import AdminUsers from './screens/admin/AdminUsers'
+import AdminFeedbacks from './screens/admin/AdminFeedbacks'
+import ReviewPage from './screens/ReviewPage'
+import FeedbackPage from './screens/FeedbackPage'
 import CartSlideIn from './components/CartSlideIn'
 import AccountScreen from './screens/AccountScreen'
 
@@ -60,7 +63,7 @@ function ScrollToTop() {
 function TrackPageViews() {
   const location = useLocation()
   useEffect(() => {
-    trackEvent('page_view', { page: location.pathname })
+    trackPageView(location.pathname)
   }, [location.pathname])
   return null
 }
@@ -78,7 +81,7 @@ function AppContent() {
   useEffect(() => {
     const url = userData ? `cart-list/${cart_id}/${userData?.user_id}/` : `cart-list/${cart_id}/`
     apiInstance.get(url).then(res => setCartCount(res.data.length))
-  })
+  }, [cart_id, userData?.user_id])
 
   const isAdminRoute = window.location.pathname.startsWith('/admin-panel')
 
@@ -106,6 +109,8 @@ function AppContent() {
         <Route path="/livraison" element={<LivraisonScreen />} />
         <Route path="/search" element={<Search />} />
         <Route path="/account" element={<AccountScreen />} />
+        <Route path="/review" element={<ReviewPage />} />
+        <Route path="/feedback" element={<FeedbackPage />} />
 
         {/* Routes Admin */}
         <Route path="/admin-panel/*" element={
@@ -117,6 +122,7 @@ function AppContent() {
                 <Route path="products" element={<AdminProducts />} />
                 <Route path="coupons" element={<AdminCoupons />} />
                 <Route path="reviews" element={<AdminReviews />} />
+                <Route path="feedbacks" element={<AdminFeedbacks />} />
                 <Route path="users" element={<AdminUsers />} />
                 <Route path="analytics" element={<AdminAnalytics />} />
               </Routes>

@@ -1038,6 +1038,14 @@ class AdminOrderUpdateView(generics.UpdateAPIView):
     queryset = CartOrder.objects.all()
     lookup_field = 'oid'
 
+    def perform_update(self, serializer):
+        old_status = self.get_object().order_status
+        instance = serializer.save()
+        if old_status != 'Fulfilled' and instance.order_status == 'Fulfilled':
+            if not instance.review_email_scheduled_at:
+                instance.review_email_scheduled_at = timezone.now() + datetime.timedelta(days=2)
+                instance.save(update_fields=['review_email_scheduled_at'])
+
 
 # ─────────────────────────────────────────────
 # ADMIN — Produits
@@ -1172,6 +1180,41 @@ class AdminAnalyticsView(APIView):
             sessions_30d.exclude(utm_content=None).exclude(utm_content='')
             .values('utm_content').annotate(count=Count('id')).order_by('-count')[:10]
         )
+        top_referrers = list(
+            sessions_30d.exclude(referrer=None).exclude(referrer='')
+            .values('referrer').annotate(count=Count('id')).order_by('-count')[:10]
+        )
+        browsers = list(
+            sessions_30d.exclude(browser=None)
+            .values('browser').annotate(count=Count('id')).order_by('-count')
+        )
+        os_stats = list(
+            sessions_30d.exclude(os=None)
+            .values('os').annotate(count=Count('id')).order_by('-count')
+        )
+        new_vs_returning = {
+            'new': sessions_30d.filter(is_new_visitor=True).count(),
+            'returning': sessions_30d.filter(is_new_visitor=False).count(),
+        }
+        languages = list(
+            sessions_30d.exclude(language=None).exclude(language='')
+            .values('language').annotate(count=Count('id')).order_by('-count')[:8]
+        )
+        avg_time_on_page = None
+        exit_events = events_30d.filter(event_type='page_exit')
+        if exit_events.exists():
+            times = [e.extra.get('time_on_page', 0) for e in exit_events if isinstance(e.extra, dict)]
+            if times:
+                avg_time_on_page = round(sum(times) / len(times), 1)
+        avg_scroll = None
+        if exit_events.exists():
+            scrolls = [e.extra.get('max_scroll_pct', 0) for e in exit_events if isinstance(e.extra, dict)]
+            if scrolls:
+                avg_scroll = round(sum(scrolls) / len(scrolls), 1)
+        top_hovered = list(
+            events_30d.filter(event_type='product_hover', product__isnull=False)
+            .values('product__title').annotate(count=Count('id')).order_by('-count')[:5]
+        )
 
         return Response({
             'sessions': {'7d': sessions_7d.count(), '30d': total_sessions},
@@ -1185,6 +1228,14 @@ class AdminAnalyticsView(APIView):
             'top_campaigns': top_campaigns,
             'top_refs': top_refs,
             'top_content': top_content,
+            'top_referrers': top_referrers,
+            'browsers': browsers,
+            'os_stats': os_stats,
+            'new_vs_returning': new_vs_returning,
+            'languages': languages,
+            'avg_time_on_page': avg_time_on_page,
+            'avg_scroll_depth': avg_scroll,
+            'top_hovered': top_hovered,
         })
 
 
@@ -1210,6 +1261,15 @@ class AnalyticsSessionView(APIView):
                 'ref': data.get('ref') or None,
                 'device_type': data.get('device_type') or None,
                 'country': data.get('country') or None,
+                'referrer': data.get('referrer') or None,
+                'is_new_visitor': data.get('is_new_visitor'),
+                'screen_res': data.get('screen_res') or None,
+                'timezone': data.get('timezone') or None,
+                'language': data.get('language') or None,
+                'browser': data.get('browser') or None,
+                'os': data.get('os') or None,
+                'fingerprint': data.get('fingerprint') or None,
+                'visit_count': data.get('visit_count') or 1,
             }
         )
         return Response({'ok': True})
@@ -1449,3 +1509,236 @@ class CartMergeView(APIView):
             return Response({'ok': True})
         updated = Cart.objects.filter(cart_id=cart_id, user__isnull=True).update(user=request.user)
         return Response({'ok': True, 'merged': updated})
+
+
+# ─────────────────────────────────────────────
+# REVIEWS — système complet
+# ─────────────────────────────────────────────
+
+import hmac as _hmac
+import hashlib as _hashlib
+
+def _make_review_token(order_oid, email):
+    key = settings.SECRET_KEY.encode()
+    msg = f"{order_oid}:{email}".encode()
+    return _hmac.new(key, msg, _hashlib.sha256).hexdigest()
+
+def _verify_review_token(token, order_oid, email):
+    expected = _make_review_token(order_oid, email)
+    return _hmac.compare_digest(token, expected)
+
+
+class ReviewTokenInfoView(APIView):
+    """Retourne les infos de commande à partir d'un token (pour pré-remplir le formulaire)."""
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        token = request.query_params.get('token')
+        order_oid = request.query_params.get('order')
+        if not token or not order_oid:
+            return Response({'valid': False}, status=400)
+        order = CartOrder.objects.filter(oid=order_oid).first()
+        if not order or not _verify_review_token(token, order_oid, order.email):
+            return Response({'valid': False, 'message': 'Lien invalide ou expiré.'}, status=400)
+        items = CartOrderItem.objects.filter(order=order).select_related('product')
+        products = [
+            {
+                'id': i.product.id,
+                'title': i.product.title,
+                'image': request.build_absolute_uri(i.product.image.url) if i.product.image else None,
+                'slug': i.product.slug,
+            }
+            for i in items
+        ]
+        already = Review.objects.filter(order=order).exists()
+        return Response({
+            'valid': True,
+            'name': order.full_name,
+            'email': order.email,
+            'products': products,
+            'already_reviewed': already,
+        })
+
+
+class PublicReviewSubmitView(APIView):
+    """Soumission publique (avec ou sans token). Accepte multipart pour les photos."""
+    permission_classes = [AllowAny]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request):
+        data = request.data
+        token = data.get('token')
+        order_oid = data.get('order_oid')
+        reviewer_name = data.get('reviewer_name', '').strip()
+        reviewer_email = data.get('reviewer_email', '').strip()
+        review_text = data.get('review', '').strip()
+        rating = data.get('rating')
+        is_global = data.get('is_global', 'false').lower() == 'true'
+        product_id = data.get('product_id')
+
+        if not reviewer_name or not reviewer_email or not review_text or not rating:
+            return Response({'error': 'Nom, email, avis et note sont requis.'}, status=400)
+
+        is_verified = False
+        order = None
+        if token and order_oid:
+            order = CartOrder.objects.filter(oid=order_oid).first()
+            if order and _verify_review_token(token, order_oid, order.email):
+                is_verified = True
+
+        user = None
+        try:
+            from django.contrib.auth import get_user_model
+            U = get_user_model()
+            user = U.objects.filter(email=reviewer_email).first()
+        except Exception:
+            pass
+
+        product = None
+        if not is_global and product_id:
+            product = Product.objects.filter(id=product_id).first()
+
+        review = Review.objects.create(
+            user=user,
+            product=product,
+            order=order,
+            reviewer_name=reviewer_name,
+            reviewer_email=reviewer_email,
+            review=review_text,
+            rating=int(rating),
+            is_verified_purchase=is_verified,
+            is_global=is_global,
+            status='pending',
+            active=False,
+        )
+
+        photos = request.FILES.getlist('photos')
+        for photo in photos[:5]:
+            ReviewPhoto.objects.create(review=review, image=photo)
+
+        return Response({'ok': True, 'message': 'Merci ! Votre avis sera publié après validation.'})
+
+
+class FeaturedReviewsView(APIView):
+    """Retourne les avis mis en avant (homepage carousel)."""
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        reviews = Review.objects.filter(
+            status='approved', is_featured=True, active=True
+        ).prefetch_related('photos').select_related('product', 'user').order_by('-date')
+
+        data = []
+        for r in reviews:
+            photos = [
+                request.build_absolute_uri(p.image.url) for p in r.photos.all()
+            ]
+            data.append({
+                'id': r.id,
+                'reviewer_name': r.reviewer_name or (r.user.username if r.user else 'Anonyme'),
+                'review': r.review,
+                'rating': r.rating,
+                'is_verified_purchase': r.is_verified_purchase,
+                'is_global': r.is_global,
+                'product_title': r.product.title if r.product else None,
+                'product_slug': r.product.slug if r.product else None,
+                'photos': photos,
+                'date': r.date.strftime('%d %B %Y'),
+            })
+        return Response(data)
+
+
+class PrivateFeedbackView(APIView):
+    """Soumission d'un feedback privé (visible uniquement admin)."""
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        token = request.data.get('token')
+        order_oid = request.data.get('order_oid')
+        name = request.data.get('name', '').strip()
+        email = request.data.get('email', '').strip()
+        message = request.data.get('message', '').strip()
+
+        if not name or not email or not message:
+            return Response({'error': 'Tous les champs sont requis.'}, status=400)
+
+        order = None
+        if token and order_oid:
+            o = CartOrder.objects.filter(oid=order_oid).first()
+            if o and _verify_review_token(token, order_oid, o.email):
+                order = o
+
+        PrivateFeedback.objects.create(order=order, name=name, email=email, message=message)
+        return Response({'ok': True, 'message': 'Merci pour votre retour.'})
+
+
+class AdminReviewManageView(APIView):
+    """Admin : approuver, rejeter, mettre en avant un avis."""
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def get(self, request):
+        status_filter = request.query_params.get('status', 'pending')
+        qs = Review.objects.prefetch_related('photos').select_related('product', 'user', 'order')
+        if status_filter != 'all':
+            qs = qs.filter(status=status_filter)
+        qs = qs.order_by('-date')
+        data = []
+        for r in qs:
+            photos = [request.build_absolute_uri(p.image.url) for p in r.photos.all()]
+            data.append({
+                'id': r.id,
+                'reviewer_name': r.reviewer_name or (r.user.username if r.user else '—'),
+                'reviewer_email': r.reviewer_email or (r.user.email if r.user else '—'),
+                'review': r.review,
+                'rating': r.rating,
+                'status': r.status,
+                'is_verified_purchase': r.is_verified_purchase,
+                'is_featured': r.is_featured,
+                'is_global': r.is_global,
+                'product_title': r.product.title if r.product else None,
+                'product_slug': r.product.slug if r.product else None,
+                'order_oid': r.order.oid if r.order else None,
+                'photos': photos,
+                'date': r.date.strftime('%d/%m/%Y'),
+            })
+        return Response(data)
+
+    def patch(self, request, pk):
+        review = get_object_or_404(Review, pk=pk)
+        action = request.data.get('action')
+        if action == 'approve':
+            review.status = 'approved'
+            review.active = True
+        elif action == 'reject':
+            review.status = 'rejected'
+            review.active = False
+        elif action == 'toggle_featured':
+            review.is_featured = not review.is_featured
+        review.save()
+        return Response({'ok': True, 'status': review.status, 'is_featured': review.is_featured})
+
+
+class AdminFeedbackListView(APIView):
+    """Admin : liste des feedbacks privés."""
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def get(self, request):
+        feedbacks = PrivateFeedback.objects.select_related('order').order_by('-created_at')
+        data = [{
+            'id': f.id,
+            'name': f.name,
+            'email': f.email,
+            'message': f.message,
+            'is_read': f.is_read,
+            'order_oid': f.order.oid if f.order else None,
+            'created_at': f.created_at.strftime('%d/%m/%Y %H:%M'),
+        } for f in feedbacks]
+        return Response(data)
+
+    def patch(self, request, pk):
+        fb = get_object_or_404(PrivateFeedback, pk=pk)
+        fb.is_read = True
+        fb.save()
+        return Response({'ok': True})

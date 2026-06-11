@@ -34,3 +34,4 @@ frontend/.env
 .vscode/
 *.swp
 *.swo
+backend/base/verification.py

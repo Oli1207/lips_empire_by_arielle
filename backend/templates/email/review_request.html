@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#fdf6f4;font-family:Georgia,serif;">
+<table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:40px 16px;">
+<table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.07);">
+
+  <tr><td style="background:#1a1a1a;padding:28px 32px;text-align:center;">
+    <p style="margin:0;font-size:22px;color:#fedbd1;letter-spacing:2px;">LIP'S EMPIRE BY ARIELLE</p>
+  </td></tr>
+
+  <tr><td style="padding:32px 36px;">
+    <p style="font-size:18px;color:#1a1a1a;margin:0 0 8px;">Bonjour {{ name }},</p>
+    <p style="font-size:15px;color:#555;line-height:1.7;margin:0 0 24px;">
+      Votre commande a bien été livrée — nous espérons que vous adorez vos gloss !<br>
+      Votre avis compte énormément pour nous et aide d'autres clientes à faire leur choix.
+    </p>
+
+    <div style="background:#fff8f6;border:1px solid #fedbd1;border-radius:12px;padding:20px 24px;margin-bottom:28px;">
+      <p style="margin:0 0 12px;font-size:13px;font-weight:bold;color:#1a1a1a;text-transform:uppercase;letter-spacing:1px;">Votre commande</p>
+      {% for item in items %}
+      <p style="margin:0 0 6px;font-size:14px;color:#555;">— {{ item.product.title }} (x{{ item.qty }})</p>
+      {% endfor %}
+    </div>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
+      <tr>
+        <td align="center" style="padding:4px;">
+          <a href="{{ review_url }}" style="display:block;background:#1a1a1a;color:#fedbd1;text-decoration:none;font-size:15px;font-weight:bold;padding:16px 28px;border-radius:10px;letter-spacing:0.5px;">
+            Laisser mon avis
+          </a>
+        </td>
+      </tr>
+    </table>
+
+    <p style="font-size:13px;color:#aaa;text-align:center;margin:0 0 8px;">Vous avez des retours privés à nous partager ?</p>
+    <table width="100%" cellpadding="0" cellspacing="0">
+      <tr>
+        <td align="center">
+          <a href="{{ feedback_url }}" style="display:inline-block;border:1px solid #e5e7eb;color:#888;text-decoration:none;font-size:13px;padding:10px 22px;border-radius:8px;">
+            Envoyer un retour en prive
+          </a>
+        </td>
+      </tr>
+    </table>
+
+    <p style="font-size:12px;color:#ccc;text-align:center;margin:28px 0 0;line-height:1.6;">
+      Ce lien vous est réservé et fonctionne sans connexion.<br>
+      Il expire dans 30 jours.
+    </p>
+  </td></tr>
+
+  <tr><td style="background:#fdf6f4;padding:20px 32px;text-align:center;">
+    <p style="margin:0;font-size:12px;color:#bbb;">Lip's Empire by Arielle — Canada</p>
+  </td></tr>
+</table>
+</td></tr></table>
+</body>
+</html>

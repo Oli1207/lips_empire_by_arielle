@@ -72,4 +72,16 @@ urlpatterns = [
 
     # Cart merge (login)
     path('cart/merge/', views.CartMergeView.as_view()),
+
+    # Reviews
+    path('reviews/token-info/', views.ReviewTokenInfoView.as_view()),
+    path('reviews/submit/', views.PublicReviewSubmitView.as_view()),
+    path('reviews/featured/', views.FeaturedReviewsView.as_view()),
+    path('feedback/submit/', views.PrivateFeedbackView.as_view()),
+
+    # Admin reviews & feedbacks
+    path('admin/reviews-manage/', views.AdminReviewManageView.as_view()),
+    path('admin/reviews-manage/<int:pk>/', views.AdminReviewManageView.as_view()),
+    path('admin/feedbacks/', views.AdminFeedbackListView.as_view()),
+    path('admin/feedbacks/<int:pk>/', views.AdminFeedbackListView.as_view()),
 ]

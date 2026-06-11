@@ -102,12 +102,16 @@ function AdminAnalytics() {
       <p style={{ marginBottom: 24, fontSize: 13, color: '#888' }}>30 derniers jours</p>
 
       {/* Stats rapides */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 14, marginBottom: 24 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 14, marginBottom: 24 }}>
         {[
-          { icon: Users,        label: 'Sessions (30j)', val: data.sessions['30d'] },
-          { icon: Users,        label: 'Sessions (7j)',  val: data.sessions['7d'] },
-          { icon: MousePointer, label: 'Taux conversion', val: `${data.conversion_rate}%` },
-          { icon: TrendingUp,   label: 'Achats (30j)',   val: data.events_by_type.find(e => e.event_type === 'purchase')?.count || 0 },
+          { icon: Users,        label: 'Sessions (30j)',     val: data.sessions['30d'] },
+          { icon: Users,        label: 'Sessions (7j)',      val: data.sessions['7d'] },
+          { icon: MousePointer, label: 'Taux conversion',    val: `${data.conversion_rate}%` },
+          { icon: TrendingUp,   label: 'Achats (30j)',       val: data.events_by_type.find(e => e.event_type === 'purchase')?.count || 0 },
+          { icon: Users,        label: 'Nouveaux visiteurs', val: data.new_vs_returning?.new ?? '—' },
+          { icon: Users,        label: 'Visiteurs connus',   val: data.new_vs_returning?.returning ?? '—' },
+          { icon: MousePointer, label: 'Tps moyen/page',     val: data.avg_time_on_page ? `${data.avg_time_on_page}s` : '—' },
+          { icon: TrendingUp,   label: 'Scroll moyen',       val: data.avg_scroll_depth ? `${data.avg_scroll_depth}%` : '—' },
         ].map(({ icon: Icon, label, val }) => (
           <div key={label} style={{ background: '#fff', borderRadius: 12, padding: '16px 18px', border: '1px solid #eee', display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{ width: 36, height: 36, borderRadius: 8, background: BRAND, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -203,6 +207,56 @@ function AdminAnalytics() {
               ))}
             </>
           )}
+        </div>
+      </div>
+
+      {/* Comportement & provenance */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 18, marginBottom: 18 }}>
+
+        {/* Referrers */}
+        <div style={{ background: '#fff', borderRadius: 12, padding: '20px 22px', border: '1px solid #eee' }}>
+          <p style={{ margin: '0 0 14px', fontWeight: 600, fontSize: 14, color: DARK }}>Referrers</p>
+          {data.top_referrers?.length > 0
+            ? data.top_referrers.map(r => (
+              <div key={r.referrer} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #f9f9f9', fontSize: 12 }}>
+                <span style={{ color: '#555', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '75%' }}>{r.referrer}</span>
+                <span style={{ fontWeight: 600 }}>{r.count}</span>
+              </div>
+            ))
+            : <p style={{ color: '#ccc', fontSize: 12 }}>Aucun referrer externe</p>
+          }
+        </div>
+
+        {/* Browsers + OS */}
+        <div style={{ background: '#fff', borderRadius: 12, padding: '20px 22px', border: '1px solid #eee' }}>
+          <p style={{ margin: '0 0 14px', fontWeight: 600, fontSize: 14, color: DARK }}>Navigateurs</p>
+          {data.browsers?.map(b => (
+            <div key={b.browser} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #f9f9f9', fontSize: 12 }}>
+              <span style={{ color: '#555' }}>{b.browser || 'Inconnu'}</span>
+              <span style={{ fontWeight: 600 }}>{b.count}</span>
+            </div>
+          ))}
+          <p style={{ margin: '16px 0 10px', fontWeight: 600, fontSize: 13, color: DARK }}>Systèmes</p>
+          {data.os_stats?.map(o => (
+            <div key={o.os} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #f9f9f9', fontSize: 12 }}>
+              <span style={{ color: '#555' }}>{o.os || 'Inconnu'}</span>
+              <span style={{ fontWeight: 600 }}>{o.count}</span>
+            </div>
+          ))}
+          <p style={{ margin: '16px 0 10px', fontWeight: 600, fontSize: 13, color: DARK }}>Langues</p>
+          {data.languages?.map(l => (
+            <div key={l.language} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', fontSize: 12 }}>
+              <span style={{ color: '#555' }}>{l.language}</span>
+              <span style={{ fontWeight: 600 }}>{l.count}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Produits les plus survolés */}
+        <div style={{ background: '#fff', borderRadius: 12, padding: '20px 22px', border: '1px solid #eee' }}>
+          <p style={{ margin: '0 0 6px', fontWeight: 600, fontSize: 14, color: DARK }}>Produits les plus survolés</p>
+          <p style={{ margin: '0 0 14px', fontSize: 11, color: '#aaa' }}>Hover &gt; 800ms — intention d'achat</p>
+          <MiniBarChart data={data.top_hovered} valueKey="count" labelKey="product__title" color="#c4b5fd" />
         </div>
       </div>
 

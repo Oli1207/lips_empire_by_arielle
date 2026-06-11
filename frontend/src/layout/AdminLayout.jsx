@@ -2,17 +2,18 @@ import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard, ShoppingBag, Package, Tag,
-  Star, BarChart2, LogOut, Menu, X, Users,
+  Star, BarChart2, LogOut, Menu, X, Users, MessageSquare,
 } from 'lucide-react'
 
 const NAV = [
-  { path: '/admin-panel',           icon: LayoutDashboard, label: 'Dashboard' },
-  { path: '/admin-panel/orders',    icon: ShoppingBag,     label: 'Commandes' },
-  { path: '/admin-panel/products',  icon: Package,         label: 'Produits' },
-  { path: '/admin-panel/coupons',   icon: Tag,             label: 'Coupons' },
-  { path: '/admin-panel/reviews',   icon: Star,            label: 'Avis clients' },
-  { path: '/admin-panel/users',     icon: Users,           label: 'Utilisateurs' },
-  { path: '/admin-panel/analytics', icon: BarChart2,       label: 'Analytics' },
+  { path: '/admin-panel',              icon: LayoutDashboard, label: 'Dashboard' },
+  { path: '/admin-panel/orders',       icon: ShoppingBag,     label: 'Commandes' },
+  { path: '/admin-panel/products',     icon: Package,         label: 'Produits' },
+  { path: '/admin-panel/coupons',      icon: Tag,             label: 'Coupons' },
+  { path: '/admin-panel/reviews',      icon: Star,            label: 'Avis clients' },
+  { path: '/admin-panel/feedbacks',    icon: MessageSquare,   label: 'Retours prives' },
+  { path: '/admin-panel/users',        icon: Users,           label: 'Utilisateurs' },
+  { path: '/admin-panel/analytics',    icon: BarChart2,       label: 'Analytics' },
 ]
 
 function AdminLayout({ children }) {
@@ -67,6 +68,10 @@ function AdminLayout({ children }) {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f4f4f6' }}>
+      <style>{`
+        .admin-main-content { margin-left: 0; }
+        @media (min-width: 992px) { .admin-main-content { margin-left: 220px; } }
+      `}</style>
       {/* Desktop sidebar */}
       <div className="d-none d-lg-block"><Sidebar /></div>
 
@@ -79,7 +84,7 @@ function AdminLayout({ children }) {
       )}
 
       {/* Main */}
-      <main style={{ marginLeft: 0, flex: 1 }} className="ms-lg-5" >
+      <main style={{ flex: 1, marginLeft: 0 }} className="admin-main-content">
         {/* Mobile topbar */}
         <div className="d-lg-none" style={{
           background: '#1a1a1a', padding: '12px 16px',
