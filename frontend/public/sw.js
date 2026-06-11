@@ -2,7 +2,7 @@ self.addEventListener('push', function (event) {
   let data = {}
   try { data = event.data.json() } catch {}
 
-  const title = data.title || 'Lips Empire'
+  const title = data.title || 'Lips Empire By Arielle'
   const options = {
     body: data.body || 'Nouvelle notification',
     icon: '/logo_arielle.png',
