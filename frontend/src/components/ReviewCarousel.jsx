@@ -11,10 +11,43 @@ function StarDisplay({ rating }) {
   )
 }
 
-function ReviewCard({ review }) {
-  const photo = review.photos?.[0]
-  const hasPhoto = !!photo
+function PhotoScroll({ photos }) {
+  const ref = useRef(null)
+  if (!photos || photos.length === 0) return (
+    <div style={{ height: 72, background: 'linear-gradient(135deg, #fedbd1 0%, #f9a8c9 100%)' }} />
+  )
+  const toUrl = (ph) => typeof ph === 'string' ? ph : `${BACKEND}${ph.image}`
+  return (
+    <div style={{ position: 'relative', height: 180 }}>
+      <div ref={ref} style={{
+        display: 'flex', overflowX: 'auto', height: '100%',
+        scrollbarWidth: 'none', scrollSnapType: 'x mandatory',
+      }}>
+        {photos.map((ph, i) => (
+          <img
+            key={i}
+            src={toUrl(ph)}
+            alt=""
+            style={{ flexShrink: 0, width: '100%', height: '100%', objectFit: 'cover', scrollSnapAlign: 'start' }}
+          />
+        ))}
+      </div>
+      {photos.length > 1 && (
+        <div style={{ position: 'absolute', bottom: 7, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 5 }}>
+          {photos.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => ref.current?.scrollTo({ left: i * ref.current.offsetWidth, behavior: 'smooth' })}
+              style={{ width: 6, height: 6, borderRadius: '50%', background: 'rgba(255,255,255,0.85)', border: 'none', padding: 0, cursor: 'pointer' }}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
+function ReviewCard({ review }) {
   return (
     <div style={{
       minWidth: 260,
@@ -27,21 +60,7 @@ function ReviewCard({ review }) {
       display: 'flex',
       flexDirection: 'column',
     }}>
-      {/* Photo en tete si dispo, sinon bloc colore */}
-      {hasPhoto ? (
-        <div style={{ height: 180, overflow: 'hidden' }}>
-          <img
-            src={`${BACKEND}${photo.image}`}
-            alt=""
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-          />
-        </div>
-      ) : (
-        <div style={{
-          height: 72,
-          background: 'linear-gradient(135deg, #fedbd1 0%, #f9a8c9 100%)',
-        }} />
-      )}
+      <PhotoScroll photos={review.photos} />
 
       <div style={{ padding: '16px 18px', flex: 1, display: 'flex', flexDirection: 'column' }}>
         <StarDisplay rating={review.rating} />
@@ -103,7 +122,7 @@ export default function ReviewCarousel() {
   const scrollStart = useRef(0)
 
   useEffect(() => {
-    apiInstance.get('reviews/featured/', { headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' } }).then(r => {
+    apiInstance.get('reviews/featured/').then(r => {
       setReviews(r.data)
     }).catch(() => {})
   }, [])

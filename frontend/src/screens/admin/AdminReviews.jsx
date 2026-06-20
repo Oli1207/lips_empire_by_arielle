@@ -32,15 +32,18 @@ function PhotosRow({ photos }) {
   if (!photos || photos.length === 0) return null
   return (
     <div style={{ display: 'flex', gap: 6, marginTop: 10, flexWrap: 'wrap' }}>
-      {photos.map((ph, i) => (
-        <a key={i} href={`${BACKEND}${ph.image}`} target="_blank" rel="noreferrer">
-          <img
-            src={`${BACKEND}${ph.image}`}
-            alt=""
-            style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 7, border: '1px solid #f0f0f0', cursor: 'zoom-in' }}
-          />
-        </a>
-      ))}
+      {photos.map((ph, i) => {
+        const url = typeof ph === 'string' ? ph : ph.image
+        return (
+          <a key={i} href={url} target="_blank" rel="noreferrer">
+            <img
+              src={url}
+              alt=""
+              style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 7, border: '1px solid #f0f0f0', cursor: 'zoom-in' }}
+            />
+          </a>
+        )
+      })}
     </div>
   )
 }
