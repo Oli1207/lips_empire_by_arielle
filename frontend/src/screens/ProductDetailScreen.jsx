@@ -548,7 +548,7 @@ function ProductDetailScreen() {
                                         {r.photos?.length > 0 && (
                                             <div style={{ display: 'flex', gap: 6, marginTop: 10, flexWrap: 'wrap' }}>
                                                 {r.photos.map((ph, pi) => (
-                                                    <img key={pi} src={ph.image} alt="" style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 7, border: '1px solid #f0f0f0' }} />
+                                                    <img key={pi} src={typeof ph === 'string' ? ph : ph.image} alt="" style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 7, border: '1px solid #f0f0f0' }} />
                                                 ))}
                                             </div>
                                         )}

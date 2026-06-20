@@ -940,7 +940,7 @@ class ReviewListAPIView(generics.ListCreateAPIView):
     def get_queryset(self):
         product_id = self.kwargs['product_id']
         product = Product.objects.get(id=product_id)
-        return Review.objects.filter(product=product, status='approved')
+        return Review.objects.filter(product=product, status='approved').prefetch_related('photos')
 
     def create(self, request, *args, **kwargs):
         payload = request.data
@@ -1678,6 +1678,7 @@ class PublicReviewSubmitView(APIView):
         rating = data.get('rating')
         is_global = data.get('is_global', 'false').lower() == 'true'
         product_id = data.get('product_id')
+        product_slug = data.get('product_slug')
 
         if not reviewer_name or not reviewer_email or not review_text or not rating:
             return Response({'error': 'Nom, email, avis et note sont requis.'}, status=400)
@@ -1698,8 +1699,11 @@ class PublicReviewSubmitView(APIView):
             pass
 
         product = None
-        if not is_global and product_id:
-            product = Product.objects.filter(id=product_id).first()
+        if not is_global:
+            if product_id:
+                product = Product.objects.filter(id=product_id).first()
+            elif product_slug:
+                product = Product.objects.filter(slug=product_slug).first()
 
         review = Review.objects.create(
             user=user,
@@ -1820,6 +1824,8 @@ class AdminReviewManageView(APIView):
             review.active = False
         elif action == 'toggle_featured':
             review.is_featured = not review.is_featured
+            if review.status == 'approved':
+                review.active = True
         review.save()
         return Response({'ok': True, 'status': review.status, 'is_featured': review.is_featured})
 

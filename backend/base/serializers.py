@@ -261,11 +261,12 @@ class ContactSerializer(serializers.ModelSerializer):
 class ReviewSerializer(serializers.ModelSerializer):
     profile = serializers.SerializerMethodField()
     reviewer_display_name = serializers.SerializerMethodField()
+    photos = serializers.SerializerMethodField()
 
     class Meta:
         model = Review
         fields = ['id', 'review', 'rating', 'user', 'profile', 'reviewer_display_name',
-                  'reviewer_name', 'rating', 'date', 'is_verified_purchase']
+                  'reviewer_name', 'date', 'is_verified_purchase', 'photos']
 
     def get_profile(self, obj):
         if obj.user and hasattr(obj.user, 'profile'):
@@ -278,3 +279,10 @@ class ReviewSerializer(serializers.ModelSerializer):
         if obj.user:
             return obj.user.username
         return 'Anonyme'
+
+    def get_photos(self, obj):
+        request = self.context.get('request')
+        return [
+            request.build_absolute_uri(p.image.url) if request else p.image.url
+            for p in obj.photos.all()
+        ]

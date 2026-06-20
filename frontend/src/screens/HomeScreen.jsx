@@ -1,6 +1,7 @@
-import React, { useEffect, useState, useContext, useRef } from 'react'
+import React, { useEffect, useState, useContext } from 'react'
 import { trackProductHoverStart, trackProductHoverEnd } from '../utils/tracking'
 import SEO from '../components/SEO'
+import GlossCarousel from '../components/GlossCarousel'
 import apiInstance from '../utils/axios';
 import GetCurrentAddress from '../plugin/UserCountry';
 import UserData from '../plugin/UserData';
@@ -11,28 +12,6 @@ import './homescreen.css'
 import ContactForm from '../components/ContactForm';
 import ReviewCarousel from '../components/ReviewCarousel';
 import { CartContext } from '../plugin/Context';
-import { Offcanvas, Nav } from 'react-bootstrap';
-import { Menu, ShoppingBag, ChevronDown } from 'lucide-react';
-import { useAuthStore } from '../store/auth';
-import logo from '../components/logo_arielle.png';
-
-
-const sidebarLinkStyle = {
-  display: 'block',
-  padding: '13px 16px',
-  color: '#1a1a1a',
-  fontWeight: 600,
-  fontSize: 15,
-  textDecoration: 'none',
-  borderRadius: 10,
-  background: 'none',
-  border: 'none',
-  width: '100%',
-  textAlign: 'left',
-  cursor: 'pointer',
-  letterSpacing: '0.02em',
-  transition: 'background 0.15s',
-}
 
 const Toast = Swal.mixin({
   toast: true,
@@ -52,32 +31,13 @@ function HomeScreen() {
   const [expandedDescriptions, setExpandedDescriptions] = useState({});
   const [imgLoaded, setImgLoaded] = useState({});
   const [isSearching, setIsSearching] = useState(false);
-  const [showIntro, setShowIntro] = useState(true);
-  const [introVisible, setIntroVisible] = useState(true);
-  const [showSidebar, setShowSidebar] = useState(false);
   const currentAddress = GetCurrentAddress();
   const userData = UserData();
-  const isLoggedIn = useAuthStore(s => s.isLoggedIn)
-  const isAdmin = useAuthStore(s => s.allUserData?.admin === true)
-  const productsRef = useRef(null);
 
   const navigate = useNavigate()
   const cart_id = CartID();
   const axios = apiInstance
   const [cartCount, setCartCount] = useContext(CartContext)
-
-  useEffect(() => {
-    const fadeOut = setTimeout(() => setIntroVisible(false), 800)
-    const hide = setTimeout(() => setShowIntro(false), 1100)
-    return () => { clearTimeout(fadeOut); clearTimeout(hide) }
-  }, [])
-
-  const scrollToProducts = () => {
-    setShowSidebar(false)
-    setTimeout(() => {
-      productsRef.current?.scrollIntoView({ behavior: 'smooth' })
-    }, 100)
-  }
 
   const toggleDescriptionExpand = (productId) => {
 
@@ -207,115 +167,10 @@ const handleSearchKey = (e) => {
         url="/"
       />
 
-      {/* Intro animation — logo plein écran */}
-      {showIntro && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 9999,
-          background: '#fedbd1',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          opacity: introVisible ? 1 : 0,
-          transition: 'opacity 0.3s ease',
-          pointerEvents: 'none',
-        }}>
-          <img src={logo} alt="Lip's Empire" style={{ width: 260, objectFit: 'contain' }} />
-        </div>
-      )}
+      <GlossCarousel />
 
-      {/* Hero section plein écran */}
-      <section style={{ position: 'relative', height: '100vh', overflow: 'hidden' }}>
-
-        {/* Barre top : hamburger | logo | panier */}
-        <div style={{
-          position: 'absolute', top: 0, left: 0, right: 0, zIndex: 100,
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '20px 24px',
-        }}>
-          <button
-            onClick={() => setShowSidebar(true)}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}
-            aria-label="Menu"
-          >
-            <Menu size={28} color="#1a1a1a" />
-          </button>
-
-          <img src={logo} alt="Lip's Empire" style={{ height: 64, objectFit: 'contain' }} />
-
-          <Link to="/cart" style={{ position: 'relative', color: '#1a1a1a', lineHeight: 0 }}>
-            <ShoppingBag size={26} />
-            {cartCount > 0 && (
-              <span style={{
-                position: 'absolute', top: -6, right: -6,
-                background: '#c44569', color: '#fff',
-                borderRadius: '50%', fontSize: 10,
-                padding: '2px 5px', fontWeight: 700, lineHeight: 1,
-              }}>{cartCount}</span>
-            )}
-          </Link>
-        </div>
-
-        {/* Image héro */}
-        <img
-          src="/show_gloss.jpeg"
-          alt="Lip's Empire — Gloss"
-          style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
-        />
-
-        {/* Indicateur scroll vers les produits */}
-        <button
-          onClick={scrollToProducts}
-          style={{
-            position: 'absolute', bottom: 28, left: '50%', transform: 'translateX(-50%)',
-            background: 'none', border: 'none', cursor: 'pointer',
-            animation: 'heroBounce 1.6s ease-in-out infinite',
-          }}
-          aria-label="Voir les produits"
-        >
-          <ChevronDown size={32} color="#1a1a1a" strokeWidth={1.5} />
-        </button>
-      </section>
-
-      {/* Sidebar (Offcanvas) */}
-      <Offcanvas show={showSidebar} onHide={() => setShowSidebar(false)} placement="start" style={{ width: 280 }}>
-        <Offcanvas.Header closeButton style={{ background: '#fce4dc', borderBottom: '1px solid #f2d8db' }}>
-          <img src={logo} alt="Lip's Empire" style={{ height: 56, objectFit: 'contain' }} />
-        </Offcanvas.Header>
-        <Offcanvas.Body style={{ background: '#fedbd1', padding: '24px 20px' }}>
-          <Nav className="flex-column" style={{ gap: 4 }}>
-            <button onClick={scrollToProducts} style={sidebarLinkStyle}>
-              Produits
-            </button>
-            <Link to="/policy" onClick={() => setShowSidebar(false)} style={sidebarLinkStyle}>
-              Politique de l'entreprise
-            </Link>
-            <Link to="/cart" onClick={() => setShowSidebar(false)} style={sidebarLinkStyle}>
-              Panier {cartCount > 0 && <span style={{ background: '#c44569', color: '#fff', borderRadius: 99, fontSize: 11, padding: '1px 7px', marginLeft: 6 }}>{cartCount}</span>}
-            </Link>
-            {isLoggedIn() && (
-              <Link to="/account" onClick={() => setShowSidebar(false)} style={sidebarLinkStyle}>
-                Mon compte
-              </Link>
-            )}
-            {isLoggedIn() && (
-              <Link to="/logout" onClick={() => setShowSidebar(false)} style={{ ...sidebarLinkStyle, color: '#b07a82' }}>
-                Deconnexion
-              </Link>
-            )}
-            {!isLoggedIn() && (
-              <Link to="/login" onClick={() => setShowSidebar(false)} style={sidebarLinkStyle}>
-                Connexion
-              </Link>
-            )}
-            {isAdmin && (
-              <Link to="/admin-panel" onClick={() => setShowSidebar(false)} style={{ ...sidebarLinkStyle, color: '#c44569', fontWeight: 700 }}>
-                Espace Admin
-              </Link>
-            )}
-          </Nav>
-        </Offcanvas.Body>
-      </Offcanvas>
-
-      {/* Section produits — ancre pour le scroll */}
-      <section ref={productsRef} className="container mt-4">
+      {/* Section produits */}
+      <section id="produits" className="container mt-4">
         <div style={{marginTop:"40px"}} className="row">
           <div className="col-12">
           <input
