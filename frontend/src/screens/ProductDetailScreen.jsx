@@ -514,12 +514,12 @@ function ProductDetailScreen() {
                     <div style={{ borderTop: '1px solid #f0f0f0', paddingTop: 40 }}>
 
                         {/* Avis existants */}
-                        {reviews.filter(r => r.status === 'approved').length > 0 && (
+                        {reviews.length > 0 && (
                             <div style={{ marginBottom: 40 }}>
                                 <h3 style={{ fontWeight: 700, fontSize: 18, color: '#1a1a1a', marginBottom: 20 }}>
-                                    Avis clients ({reviews.filter(r => r.status === 'approved').length})
+                                    Avis clients ({reviews.length})
                                 </h3>
-                                {reviews.filter(r => r.status === 'approved').map((r, i) => (
+                                {reviews.map((r, i) => (
                                     <div key={i} style={{
                                         background: '#fff', border: '1px solid #f0f0f0',
                                         borderRadius: 12, padding: '16px 20px', marginBottom: 12,
