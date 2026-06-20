@@ -103,7 +103,7 @@ export default function ReviewCarousel() {
   const scrollStart = useRef(0)
 
   useEffect(() => {
-    apiInstance.get('reviews/featured/').then(r => {
+    apiInstance.get('reviews/featured/', { headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' } }).then(r => {
       setReviews(r.data)
     }).catch(() => {})
   }, [])

@@ -933,6 +933,7 @@ class ContactCreateView(generics.CreateAPIView):
     
 
 
+@method_decorator(never_cache, name='dispatch')
 class ReviewListAPIView(generics.ListCreateAPIView):
     serializer_class = ReviewSerializer
     permission_classes = [AllowAny]
@@ -1663,6 +1664,7 @@ class ReviewTokenInfoView(APIView):
         })
 
 
+@method_decorator(never_cache, name='dispatch')
 class PublicReviewSubmitView(APIView):
     """Soumission publique (avec ou sans token). Accepte multipart pour les photos."""
     permission_classes = [AllowAny]
@@ -1726,6 +1728,7 @@ class PublicReviewSubmitView(APIView):
         return Response({'ok': True, 'message': 'Merci ! Votre avis sera publié après validation.'})
 
 
+@method_decorator(never_cache, name='dispatch')
 class FeaturedReviewsView(APIView):
     """Retourne les avis mis en avant (homepage carousel)."""
     permission_classes = [AllowAny]
@@ -1781,6 +1784,7 @@ class PrivateFeedbackView(APIView):
         return Response({'ok': True, 'message': 'Merci pour votre retour.'})
 
 
+@method_decorator(never_cache, name='dispatch')
 class AdminReviewManageView(APIView):
     """Admin : approuver, rejeter, mettre en avant un avis."""
     authentication_classes = [JWTAuthentication]
@@ -1830,6 +1834,7 @@ class AdminReviewManageView(APIView):
         return Response({'ok': True, 'status': review.status, 'is_featured': review.is_featured})
 
 
+@method_decorator(never_cache, name='dispatch')
 class AdminFeedbackListView(APIView):
     """Admin : liste des feedbacks privés."""
     authentication_classes = [JWTAuthentication]
