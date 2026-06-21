@@ -192,10 +192,10 @@ const Header = () => {
                     <FontAwesomeIcon icon={faBookOpen} />
                     <span className="ms-2">POLITIQUE DE L'ENTREPRISE</span>
                   </Nav.Link>
-                  <Nav.Link href="/livraison" className="nav-link">
+                  {/* <Nav.Link href="/livraison" className="nav-link">
                     <FontAwesomeIcon icon={faTruckFast} />
                     <span className="ms-2">LIVRAISON</span>
-                  </Nav.Link>
+                  </Nav.Link> */}
                   <Nav.Link href="/cart" className="nav-link">
                     <FontAwesomeIcon icon={faCartShopping} />
                     {cartCount}

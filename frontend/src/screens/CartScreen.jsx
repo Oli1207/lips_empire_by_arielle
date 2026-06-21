@@ -792,7 +792,7 @@ function CartScreen() {
                                   <span style={{ color: '#FEDBD1', fontWeight: 700 }}>Conditions generales de vente</span>
                                   <button onClick={() => setOpenPolicy(false)} style={{ background: 'none', border: 'none', color: '#aaa', fontSize: 20, cursor: 'pointer', lineHeight: 1 }}>x</button>
                                 </div>
-                                <div style={{ overflowY: 'auto', flex: 1, padding: '16px 20px' }}>
+                                <div style={{ overflowY: 'auto', flex: 1, padding: '16px 20px', color: '#fff' }}>
                                   <PolicyScreen embedded />
                                 </div>
                                 <div style={{ padding: '12px 20px', borderTop: '1px solid #2d2d2d', textAlign: 'right' }}>
