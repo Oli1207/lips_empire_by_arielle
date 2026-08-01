@@ -16,10 +16,6 @@ function Logout() {
     }}>
       <div style={{ width: '100%', maxWidth: 420, textAlign: 'center' }}>
 
-        <div style={{ marginBottom: 32 }}>
-          <img src={logo} alt="Lip's Empire by Arielle" style={{ height: 90, objectFit: 'contain' }} />
-        </div>
-
         <div style={{
           background: '#fff', borderRadius: 20,
           padding: '40px 32px',

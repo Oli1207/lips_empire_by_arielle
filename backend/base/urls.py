@@ -50,6 +50,8 @@ urlpatterns = [
     path('admin/orders/<str:oid>/', views.AdminOrderUpdateView.as_view()),
     path('admin/products/', views.AdminProductListCreateView.as_view()),
     path('admin/products/<int:pk>/', views.AdminProductDetailView.as_view()),
+    path('admin/products/<int:product_id>/gallery/', views.AdminGalleryView.as_view()),
+    path('admin/products/<int:product_id>/specifications/', views.AdminSpecificationView.as_view()),
     path('admin/coupons/', views.AdminCouponListCreateView.as_view()),
     path('admin/coupons/<int:pk>/', views.AdminCouponDetailView.as_view()),
     path('admin/reviews/', views.AdminReviewListView.as_view()),

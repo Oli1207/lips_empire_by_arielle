@@ -227,6 +227,18 @@ class AdminProductSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class GallerySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Gallery
+        fields = ['id', 'image', 'active', 'gid']
+
+
+class SpecificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Specification
+        fields = ['id', 'title', 'content']
+
+
 class AdminReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review

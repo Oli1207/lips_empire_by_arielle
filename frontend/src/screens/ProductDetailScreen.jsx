@@ -38,7 +38,6 @@ function useSocialProof(productId) {
         const MESSAGES = [
             () => ({ icon: null, text: `${rand(2, 6)} personnes regardent ce produit en ce moment` }),
             () => ({ icon: null, text: `${rand(1, 4, 17)} personnes ont ce produit dans leur panier` }),
-            () => ({ icon: null, text: `Dernière commande il y a ${rand(8, 45, 31)} minutes` }),
             () => ({ icon: null, text: `${rand(3, 9, 53)} personnes l'ont acheté cette semaine` }),
         ]
 
@@ -726,11 +725,6 @@ function ProductDetailScreen() {
                 <p style={{ margin: 0, fontSize: 12, color: '#888' }}>{product.title}</p>
                 <p style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#1a1a1a' }}>{product.price} CAD</p>
             </div>
-            {product.stock_qty > 0 && product.stock_qty <= 3 && (
-                <span style={{ fontSize: 11, color: '#c97b63', fontWeight: 600, whiteSpace: 'nowrap' }}>
-                    ! Plus que {product.stock_qty}
-                </span>
-            )}
             <button
                 onClick={handleAddToCart}
                 disabled={product.stock_qty === 0}

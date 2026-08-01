@@ -1156,6 +1156,65 @@ class AdminProductDetailView(generics.RetrieveUpdateDestroyAPIView):
     parser_classes = [MultiPartParser, FormParser]
 
 
+@method_decorator(never_cache, name='dispatch')
+class AdminGalleryView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def get(self, request, product_id):
+        galleries = Gallery.objects.filter(product_id=product_id)
+        data = [{'id': g.id, 'image': request.build_absolute_uri(g.image.url), 'active': g.active, 'gid': g.gid} for g in galleries]
+        return Response(data)
+
+    def post(self, request, product_id):
+        product = get_object_or_404(Product, pk=product_id)
+        image = request.FILES.get('image')
+        if not image:
+            return Response({'error': 'Image requise'}, status=400)
+        g = Gallery.objects.create(product=product, image=image, active=True)
+        return Response({'id': g.id, 'image': request.build_absolute_uri(g.image.url), 'active': g.active, 'gid': g.gid}, status=201)
+
+    def delete(self, request, product_id):
+        gallery_id = request.data.get('gallery_id') or request.query_params.get('gallery_id')
+        g = get_object_or_404(Gallery, pk=gallery_id, product_id=product_id)
+        g.image.delete(save=False)
+        g.delete()
+        return Response(status=204)
+
+
+@method_decorator(never_cache, name='dispatch')
+class AdminSpecificationView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def get(self, request, product_id):
+        specs = Specification.objects.filter(product_id=product_id)
+        data = [{'id': s.id, 'title': s.title, 'content': s.content} for s in specs]
+        return Response(data)
+
+    def post(self, request, product_id):
+        product = get_object_or_404(Product, pk=product_id)
+        title = request.data.get('title', '')
+        content = request.data.get('content', '')
+        s = Specification.objects.create(product=product, title=title, content=content)
+        return Response({'id': s.id, 'title': s.title, 'content': s.content}, status=201)
+
+    def put(self, request, product_id):
+        spec_id = request.data.get('spec_id')
+        s = get_object_or_404(Specification, pk=spec_id, product_id=product_id)
+        s.title = request.data.get('title', s.title)
+        s.content = request.data.get('content', s.content)
+        s.save()
+        return Response({'id': s.id, 'title': s.title, 'content': s.content})
+
+    def delete(self, request, product_id):
+        spec_id = request.data.get('spec_id') or request.query_params.get('spec_id')
+        s = get_object_or_404(Specification, pk=spec_id, product_id=product_id)
+        s.delete()
+        return Response(status=204)
+
+
 # ─────────────────────────────────────────────
 # ADMIN — Coupons
 # ─────────────────────────────────────────────
