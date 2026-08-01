@@ -637,13 +637,6 @@ function ProductDetailScreen() {
                                             decoding="async"
                                             style={{ width: '100%', height: 160, objectFit: 'cover' }}
                                         />
-                                        {p.stock_qty > 0 && p.stock_qty <= 3 && (
-                                            <span style={{
-                                                position: 'absolute', top: 6, left: 6,
-                                                background: '#1a1a1a', color: '#fedbd1',
-                                                fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 99,
-                                            }}>! Plus que {p.stock_qty}</span>
-                                        )}
                                     </div>
                                     <div style={{ padding: '10px 12px' }}>
                                         <p style={{ margin: '0 0 4px', fontSize: 13, fontWeight: 600, color: '#1a1a1a', lineHeight: 1.3 }}>{p.title}</p>

@@ -223,17 +223,6 @@ const handleSearchKey = (e) => {
                           style={{ display: 'block', opacity: imgLoaded[p.id] ? 1 : 0, transition: 'opacity 0.3s' }}
                         />
                       </div>
-                      {p.stock_qty > 0 && p.stock_qty <= 3 && (
-                        <span style={{
-                          position: 'absolute', top: 8, left: 8,
-                          background: '#1a1a1a', color: '#fedbd1',
-                          fontSize: 11, fontWeight: 700,
-                          padding: '4px 10px', borderRadius: 99,
-                          letterSpacing: '0.03em',
-                        }}>
-                          ! Plus que {p.stock_qty}
-                        </span>
-                      )}
                       {p.stock_qty === 0 && (
                         <span style={{
                           position: 'absolute', top: 8, left: 8,
