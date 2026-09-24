@@ -874,11 +874,19 @@ class PaymentSuccessView(generics.CreateAPIView):
                     fail_silently=True
                 )
 
-                # Push notification admin
+                # Push notification admin — nouvelle commande
                 _send_admin_push(
-                    title=f"Nouvelle commande ! 🛍️",
+                    title="Nouvelle commande ! 🛍️",
                     body=f"{order.full_name} — {order.total} CAD ({order.country})",
                 )
+
+                # Push si un produit est épuisé (stock déjà décrémenté à la création de commande)
+                for item in order_items:
+                    if item.product.stock_qty <= 0:
+                        _send_admin_push(
+                            title="⚠️ Stock épuisé",
+                            body=f"{item.product.title} est en rupture de stock.",
+                        )
 
                 # --- QuickBooks non bloquant ---
                 qb_error = None
@@ -930,6 +938,13 @@ class ContactCreateView(generics.CreateAPIView):
     queryset = Contact.objects.all()
     serializer_class = ContactSerializer
     permission_classes = [AllowAny]
+
+    def perform_create(self, serializer):
+        instance = serializer.save()
+        _send_admin_push(
+            title="📩 Nouveau message de contact",
+            body=f"{instance.name} — {instance.subject}",
+        )
     
 
 
@@ -1784,6 +1799,11 @@ class PublicReviewSubmitView(APIView):
         for photo in photos[:5]:
             ReviewPhoto.objects.create(review=review, image=photo)
 
+        product_name = review.product.title if review.product else "global"
+        _send_admin_push(
+            title="⭐ Nouvel avis client",
+            body=f"{reviewer_name} — {product_name} ({rating}/5)",
+        )
         return Response({'ok': True, 'message': 'Merci ! Votre avis sera publié après validation.'})
 
 
@@ -1840,6 +1860,10 @@ class PrivateFeedbackView(APIView):
                 order = o
 
         PrivateFeedback.objects.create(order=order, name=name, email=email, message=message)
+        _send_admin_push(
+            title="💬 Feedback privé reçu",
+            body=f"{name} — {message[:80]}",
+        )
         return Response({'ok': True, 'message': 'Merci pour votre retour.'})
 
 
