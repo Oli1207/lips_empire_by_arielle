@@ -70,7 +70,7 @@ function AdminDashboard() {
         <StatCard icon={AlertTriangle} label="Rupture de stock" value={data.stock.out_of_stock} sub={`${data.stock.low_stock.length} produits faibles`} color="#fdd" />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 24 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20, marginBottom: 24 }}>
         {/* Graphe revenus */}
         <div style={{ background: '#fff', borderRadius: 12, padding: '20px 24px', border: '1px solid #eee' }}>
           <p style={{ margin: '0 0 4px', fontWeight: 600, fontSize: 14, color: DARK }}>Revenus — 30 derniers jours</p>

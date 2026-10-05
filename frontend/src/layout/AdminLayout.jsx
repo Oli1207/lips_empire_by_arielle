@@ -71,6 +71,8 @@ function AdminLayout({ children }) {
       <style>{`
         .admin-main-content { margin-left: 0; }
         @media (min-width: 992px) { .admin-main-content { margin-left: 220px; } }
+        .admin-inner { padding: 16px 12px; max-width: 1200px; }
+        @media (min-width: 768px) { .admin-inner { padding: 28px 24px; } }
       `}</style>
       {/* Desktop sidebar */}
       <div className="d-none d-lg-block"><Sidebar /></div>
@@ -96,7 +98,7 @@ function AdminLayout({ children }) {
           </button>
         </div>
 
-        <div style={{ padding: '28px 24px', maxWidth: 1200 }}>
+        <div className="admin-inner">
           {children}
         </div>
       </main>

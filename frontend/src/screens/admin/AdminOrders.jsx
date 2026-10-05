@@ -110,7 +110,7 @@ function AdminOrders() {
               <button onClick={() => setSelected(null)} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#888' }}>×</button>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 24px', marginBottom: 20, fontSize: 13 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '8px 24px', marginBottom: 20, fontSize: 13 }}>
               {[
                 ['Client', selected.full_name],
                 ['Email', selected.email],
@@ -163,7 +163,7 @@ function AdminOrders() {
             <hr style={{ border: 'none', borderTop: '1px solid #f0f0f0', margin: '20px 0' }} />
 
             <p style={{ fontWeight: 600, marginBottom: 10, fontSize: 14 }}>Changer le statut</p>
-            <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               {['Pending', 'Fulfilled', 'Cancelled'].map(s => (
                 <button
                   key={s}

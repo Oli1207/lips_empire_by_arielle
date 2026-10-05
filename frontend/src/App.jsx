@@ -86,14 +86,15 @@ function AppContent() {
   }, [cart_id, userData?.user_id])
 
   const isAdminRoute = pathname.startsWith('/admin-panel')
+  const isAuthRoute = pathname === '/login' || pathname === '/register'
 
   return (
     <CartContext.Provider value={[cartCount, setCartCount]}>
       <ScrollToTop />
       <TrackPageViews />
-      {!isAdminRoute && <Header />}
-      {!isAdminRoute && <PromoBanner />}
-      {!isAdminRoute && <CartSlideIn />}
+      {!isAdminRoute && !isAuthRoute && <Header />}
+      {!isAdminRoute && !isAuthRoute && <PromoBanner />}
+      {!isAdminRoute && !isAuthRoute && <CartSlideIn />}
 
       <Routes>
         {/* Routes publiques */}
